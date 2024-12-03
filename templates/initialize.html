@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page">
+    <div class="page_title">데이터 리셋</div><br>
+
+
+    <fieldset class="groupbox-border">
+        <legend class="groupbox-border">매출, 광고보고서 관련 데이터 삭제</legend>
+        <form hx-post="/initialize_page" hx-swap="innerHTML" hx-target="body" hx-vals='{ "resettype":"part" }'>
+            <div class='row'>
+                <div class='col-5'>
+                    <div class="itemtitle">며칠 동안의 데이터를 삭제할까요?<br>최대 7일까지의 데이터를 삭제할 수 있습니다.
+                    <div class="itemvalue">
+                        <input type='number' value="7" name="days" class="input_id" max="7" min="1">
+                    </div>
+                    </div>
+                </div>
+                <div class='col-6'>
+                    <input type="submit" button value="관련 데이터 및 마진계산값 삭제"  class="macro_on"></button>
+                </div>
+            </div>
+        </form>
+    </fieldset>
+    <fieldset class="groupbox-border">
+        <legend class="groupbox-border">(주의)⚠️ 모든 데이터 삭제 </legend>
+        <form hx-post="/initialize_page" hx-swap="innerHTML" hx-target="body" hx-vals='{ "resettype":"reset" }'>
+            <div class='row'>
+                <div class='col-5'>
+                    <div class="itemtitle">버튼을 클릭하면 모든 데이터가 삭제되고, 마진가이드가 자동종료 됩니다. 
+                    <div class="itemvalue">
+                        <input type='password' placeholder="마진가이드 계정의 비밀번호를 입력하세요." name="password" class="input_id">
+                    </div>
+                    </div>
+                </div>
+                <div class='col-6'>
+                    <input type="submit" button value="전체데이터 삭제"  class="macro_on"></button>
+                </div>
+            </div>
+        </form>
+    </fieldset>
+    {% for account in accounts %}
+    <fieldset class="groupbox-border">
+        <legend class="groupbox-border">{{ account['sid'] }}</legend>
+        <form hx-post="/apt_save_defualt_value" hx-trigger="change" hx-swap="innerHTML" hx-target="#complete">
+            <div class='row'>
+                <div class='col-3'>
+                <div class="itemtitle">아이디</div>
+                <div class="itemvalue">
+                    <input type='text' value="{{ account['sid'] }}" name="account" class="input_id" disabled >
+                </div>
+                </div>
+                <div class='col-3'>
+                <div class="itemtitle">비밀번호</div>
+                <div class="itemvalue">
+                    <input type='password' value="{{ account['password'] }}" name="password" class="input_pass" >
+                </div>
+                </div>
+                <div class='col-2'>
+                    <input type="submit" button hx-post="edit_password_loading" value="비밀번호 변경적용하기" hx-swap="innerHTML" hx-target="body" class="fix_pass_btn" hx-vals='{ "account" : "{{ account["sid"] }}" }'></button>
+                </div>
+                <div class='col-2'>
+                    <input type="submit" button hx-post="del_account" value="계정 삭제하기" hx-swap="innerHTML" hx-target="body" class="del_id_btn" hx-vals='{ "account" : "{{ account["sid"] }}" }'hx-confirm="계정을 마진가이드에서 삭제하시겠습니까?"></button>
+                </div>
+            </div>
+        </form>
+    </fieldset>
+    {% endfor %}
+    
+
+</div>
+
+
+{% endblock %}

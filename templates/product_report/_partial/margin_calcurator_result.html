@@ -1,0 +1,85 @@
+    
+    <div  class="col-12" style="font-size:20px;">메인 계산결과(옵션별 동일매출 기준)</div>
+    <div class="row">
+        <div class="col-4">
+            <div class="cal_ele_title">상품 총매출</div>
+            <div class="itemcontent">{{ result['total_amount'] }}<span class="unit">원</span>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="cal_ele_title">상품 총마진</div>
+            <div class="itemcontent">{{ result['total_margin'] }}<span class="unit">원</span>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="cal_ele_title">상품 마진율</div>
+            <div class="itemcontent">{{ result['total_margin_rate'] }}<span class="unit">%</span>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4">
+            <div class="cal_ele_title">상품 광고매출</div>
+            <div class="itemcontent">{{ result['ads_order_amount'] }}<span class="unit">원</span>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="cal_ele_title">상품 광고기여마진</div>
+            <div class="itemcontent">{{ result['ads_margin'] }}<span class="unit">원</span>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="cal_ele_title">상품 광고기여마진율</div>
+            <div class="itemcontent">{{ result['ads_margin_rate'] }}<span class="unit">%</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="cal_ele_title">옵션별 계산결과</div>
+        <div class="itemcontent" style="padding-top :10px;">
+            <table id="table_cal_margin_option" class="stripe nowrap" width="100%"></table>
+        </div>
+    </div>
+
+<script>
+    var prdcode = '{{ result["prdcode"] }}'
+    var ads_order_rate = '{{ result["ads_order_rate"] }}'
+    var adscost = '{{ result["adscost"] }}'
+    var target_roas = '{{ result["target_roas"] }}'
+    var table_cal_margin_option = $('#table_cal_margin_option').DataTable({
+        ajax: {
+            method : "POST",
+            contentType: 'application/json;charset=UTF-8',
+            url: '/api_table_cal_margin_option',
+            data: function () { return JSON.stringify({"prdcode" : prdcode , 'ads_order_rate' : ads_order_rate, 'adscost' : adscost, 'target_roas': target_roas }) },
+            dataSrc: function(res) { var data = res.data; return data; }, },
+        columns: [
+            { data: "optname", title : '옵션명', name : 'optname' },
+            { data: "deltype", title : '판매방식', name : 'deltype' },
+            { data: "price", title : '판매가', name : 'price' },
+            { data: "total_amount", title : '총 매출', name : 'total_amount' },
+            { data: "total_margin", title : '총 마진', name : 'total_margin' },
+            { data: "total_margin_rate", title : '마진율', name : 'total_margin_rate' },
+            { data: "ads_order_amount", title : '광고매출', name : 'ads_order_amount' },
+            { data: "ads_margin", title : '광고기여마진', name : 'ads_margin' },
+            { data: "ads_margin_rate", title : '광고매출 마진율', name : 'ads_margin_rate' },
+            { data: "zero_margin_roas", title : '광고매출 제로마진기준ROAS', name : 'zero_margin_roas' },
+            
+            
+        ],
+        columnDefs: [
+            { targets: [2,3,4,5,6,7,8,9 ], className: "fee-col", render : $.fn.DataTable.render.number( ',' ) },
+            { targets: [0,1], class : 'text-center' },
+            { targets: [0, 1], className: "outer_table_td", },
+        ],
+        order: [[2, 'asc']],
+        dom : 't',
+        fixedColumns: {start: 2 },
+        ordering:true,
+        searching : false,
+        processing: true,
+        colReorder: true,
+        paging : false,
+        scrollX : true, scrollY:'300px',
+    });
+</script>

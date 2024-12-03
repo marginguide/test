@@ -1,0 +1,1384 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page">
+    <div class="row sticky">
+        <div class="page_title">
+            {% if groupsetting['isactive'] == 'on'  %}
+            <input role="switch" type="checkbox"  checked disabled  class="switch"/>
+            {% else %}
+            <input role="switch" type="checkbox" disabled  class="switch"/>
+            {% endif  %}
+            {{ groupsetting['groupname'] }}
+        </div>
+        <a href="campaign_page?campaigncode={{ groupsetting['campaigncode'] }}" class="right_btn">캠페인 페이지 이동</a>
+        <div style="width=100%"></div>
+        <div class="row btn_area">
+            <form >
+                <div class="radiobtn" hx-post="{{ url_for('group_page') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{ "start_date": "1", "end_date": "{{ end_date }}", "groupcode" : "{{ groupcode}}" }'>
+                    <input type="radio" id="rt-1" {% if(dayscnt == "1") %}checked{% endif %} />
+                    <label for="rt-1">어제</label>
+                </div>
+                <div class="radiobtn" hx-post="{{ url_for('group_page') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{ "start_date": "3", "end_date": "{{ end_date }}", "groupcode" : "{{ groupcode}}" }'>
+                    <input type="radio" id="rt-3" {% if(dayscnt == "3") %}checked{% endif %} />
+                    <label for="rt-3">3일</label>
+                </div>
+                <div class="radiobtn" hx-post="{{ url_for('group_page') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{ "start_date": "7", "end_date": "{{ end_date }}", "groupcode" : "{{ groupcode}}" }'>
+                    <input type="radio" id="rt-7" {% if(dayscnt == "7") %}checked{% endif %} />
+                    <label for="rt-7">7일</label>
+                </div>
+                <div class="radiobtn" hx-post="{{ url_for('group_page') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{ "start_date": "14", "end_date": "{{ end_date }}", "groupcode" : "{{ groupcode}}" }'>
+                    <input type="radio" id="rt-14" {% if(dayscnt== "14") %}checked{% endif %} />
+                    <label for="rt-14">14일</label>
+                </div>
+                <div class="radiobtn" hx-post="{{ url_for('campaign_page') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{ "start_date": "30", "end_date": "{{ end_date }}", "groupcode" : "{{ groupcode}}" }'>
+                    <input type="radio" id="rt-30" {% if(dayscnt == "30") %}checked{% endif %} />
+                    <label for="rt-30">30일</label>
+                </div>
+                <div class="radiobtn" hx-post="{{ url_for('group_page') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{ "start_date": "60", "end_date": "{{ end_date }}", "groupcode" : "{{ groupcode}}" }'>
+                    <input type="radio" id="rt-60" {% if(dayscnt == "60") %}checked{% endif %} />
+                    <label for="rt-60">60일</label>
+                </div>
+                <div class="radiobtn" data-toggle="modal" data-target="#modal-form-signup">
+                    <input type="radio" id="rt-selcetdate"  name="start_date" value='rt-selcetdate' {% if(dayscnt == '') %}checked{% endif %}  />
+                    <label for="rt-selcetdate">날짜 선택</label>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+    <!-- 캠페인 요약 및 누적 실적 / 광고 그룹 리스트 -->
+    <div class="section_title" id = "pannel_1" onclick="show_set_pannel(this.id)">그룹세팅 기본정보</div>
+    <div id="pannel_1c" class="section_content" style=" display: none;">
+        <div class="row col-12">
+            <div class="itemtitle">광고그룹 이름
+            </div>
+            <div class="itemcontent">
+                <input type="text" id="groupreport_groupname" name = "{{ groupcode }}"value="{{ groupsetting['groupname'] }}" class="input_group_name" onchange='ajax_group_name(this.id)'>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-3">
+                <div class="itemtitle">광고그룹코드
+                </div>
+                <div class="itemcontent">{{ groupcode }}
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">광고그룹 운영방법
+                </div>
+                <div class="itemcontent">{{ groupsetting['bidtype'] }}
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">광고그룹 운영상태
+                </div>
+                <div class="itemcontent">{{ groupsetting['isactive'] }}
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">광고그룹 등록일
+                </div>
+                <div class="itemcontent">{{ groupsetting['startdate'] }}
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            {% if groupsetting['bidtype'] == '자동' %}
+            <!--   자동광고일경우-->
+            <div class="col-3">
+                <div class="itemtitle">목표ROAS</div>
+                <div class="itemcontent">
+                    <input type="number" class="camp_table_input"  name="{{groupcode}}" value = "{{ groupsetting['roastarget'] }}" id="nonkeywordpricing_{{groupcode}}" onchange="ajax_group_roas(this.id)" >
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">제외키워드 갯수</div>
+                <div class="itemcontent">{{ groupsetting['blacklist'] }}</div>
+            </div>
+            {% endif %}
+            {% if groupsetting['bidtype'] == '수동' %}
+            <!-- 수동 광고일경우 -->
+            <div class="col-3">
+                <div class="itemtitle">검색키워드 갯수</div>
+                <div class="itemcontent">{{ groupsetting['keyword'] }}</div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">비검색영역 입찰가</div> 
+                <div class="itemcontent">
+                    <input type="number" class="camp_table_input"  name="{{groupcode}}" value = "{{ groupsetting['nonkeywordcpc'] }}" id="nonkeywordpricing_{{groupcode}}" onchange="ajax_nonkeywordpricing(this.id)" >
+                </div>
+            </div>
+            
+        </div>
+        <div class="row">
+            <!-- 수동 - 스마트타케팅 광고일경우 -->
+            
+            <div class="col-3">
+                <div class="itemtitle">스마트타게팅</div>
+                <div class="itemcontent">
+                    {% if groupsetting['keywordtargeting'] == 'on' %}
+                    <input role="switch" type="checkbox" class="switch" name="{{ groupcode }}" id ="smarttargeting_onoff" onchange="ajax_smarttargeting_switch(this.id)" checked/>
+                    {% else %}
+                    <input role="switch" type="checkbox" class="switch" name="{{ groupcode }}" id ="smarttargeting_onoff" onchange="ajax_smarttargeting_switch(this.id)"/>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">스마트타케팅 입찰가</div>
+                <div class="itemcontent">
+                    {% if groupsetting['keywordtargeting'] == 'on' %}
+                    <input type="number" class="camp_table_input"  name="{{groupcode}}"  value = "{{ groupsetting['smarttargetingpricing'] }}" disabled id="smarttargetingpricing_{{groupcode}}"  onchange="ajax_smarttargeting_pricing(this.id)" >
+                    {%  else %}
+                    <input type="number" class="camp_table_input"  name="{{groupcode}}"  value = "100" disabled id="smarttargetingpricing_{{groupcode}}" onchange="ajax_smarttargeting_pricing(this.id)" >
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">스마트타게팅 제외키워드 갯수</div>
+                <div class="itemcontent">{{ groupsetting['blacklist'] }}</div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- 광고그룹 누적실적 -->
+    <div class="section_title" id = "pannel_2" onclick="show_set_pannel(this.id)">광고그룹 누적실적<div class="right_text">{{ summary['first_date'] }} 이후</div></div>
+    <div id="pannel_2c"class="section_content">
+        <div class="row">
+            <div class="col-3">
+                <div class="itemtitle">누적광고비
+                </div>
+                <div class="itemcontent">{{ groupsetting['group_adscost'] }}
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">누적매출
+                </div>
+                <div class="itemcontent">{{ groupsetting['group_adsorderamount'] }}
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">누적 광고그룹마진(현 비용기준)
+                </div>
+                <div class="itemcontent">{{ groupsetting['group_margin'] }}
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">누적 ROAS
+                </div>
+                <div class="itemcontent">{{ groupsetting['group_roas'] }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 광고비 관련 데이터 -->
+    <div class="section_title" id = "pannel_3" onclick="show_set_pannel(this.id)">광고비 관련 데이터<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_3c"class="section_content">
+        <div class="row">
+            <div class="col-3 ">
+                <div class="itemtitle">광고비
+                </div>
+                <div class="itemcontent">{{ summary['adscost_total'] }} <span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">일평균 광고비
+                </div>
+                <div class="itemcontent">{{ summary['daily_adscost'] }}<span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">검색영역 사용 비율
+                </div>
+                <div class="itemcontent">{{ summary['costrate_keyword'] }}<span class="unit">%</span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="itemtitle" style="margin-top:20px;">광고 노출 채널별 광고성과
+                </div>
+                <div class="itemcontent" style="width:100%; padding-top:10px;">
+                    <canvas id="chart_groupreport_dailycost" style="width:100%; height:200px;" ></canvas>
+                </div>
+            </div>  
+        </div>
+    </div>
+
+    <!-- 광고효율 관련 데이터-->
+    <div class="section_title" id = "pannel_4" onclick="show_set_pannel(this.id)">광고효율 관련 데이터<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_4c"class="section_content">
+        <div class="row">
+            <div class="col-2">
+                <div class="itemtitle">광고전환 매출
+                </div>
+                <div class="itemcontent">{{ summary['adsorderamount_total'] }} <span class="unit">원</span>
+                </div>
+                <div class="itemtitle">광고효율
+                </div>
+                <div class="itemcontent">{{ summary['roas_total'] }} <span class="unit">%</span>
+                </div>
+                <div class="itemtitle">전환율
+                </div>
+                <div class="itemcontent">{{ summary['cvr_total'] }} <span class="unit">%</span>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="itemtitle">광고전환 판매수량
+                </div>
+                <div class="itemcontent">{{ summary['adsorderq_total'] }}<span class="unit">개</span>
+                </div>
+                <div class="itemtitle">제로마진 기준효율
+                </div>
+                <div class="itemcontent">{{ summary['roas_zeromargin'] }} <span class="unit">%</span>
+                </div>
+                <div class="itemtitle">전환단가
+                </div>
+                <div class="itemcontent">{{ summary['cps_total'] }} <span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="itemtitle">광고그룹 마진
+                </div>
+                <div class="itemcontent">{{ summary['group_margin'] }}<span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="itemtitle">노출채널별 광고효율</div>
+                <div class="itemcontent">
+                    <canvas id="chart_groupreport_roasbydisp" style="width:100%; height:250px;" ></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="itemtitle" style="margin-top:20px;">일간 광고효율/전환율/전환매출/전환단가</div>
+                <div class="itemcontent" style="width:100%; padding-top:10px;">
+                    <canvas id="chart_groupreport_dailyroas" style="width:100%; height:200px;" ></canvas>
+                </div>
+            </div>  
+        </div>
+    </div>
+
+    <!-- 노출, 클릭 관련 데이터-->
+    <div class="section_title" id = "pannel_5" onclick="show_set_pannel(this.id)">노출, 클릭 관련 데이터<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_5c"class="section_content">
+        <div class="row">
+            <div class="col-3 ">
+                <div class="itemtitle">노출수
+                </div>
+                <div class="itemcontent">{{ summary['impressioncnt_total'] }} <span class="unit">번</span>
+                </div>
+                <div class="itemtitle">클릭단가(검색영역)
+                </div>
+                <div class="itemcontent">{{ summary['cpc_keyword'] }} <span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="itemtitle">클릭수
+                </div>
+                <div class="itemcontent">{{ summary['clickcnt_total'] }}<span class="unit">번</span>
+                </div>
+                <div class="itemtitle">클릭단가(비검색영역)
+                </div>
+                <div class="itemcontent">{{ summary['cpc_nonkeyword'] }} <span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-2">
+                <div class="itemtitle">클릭율
+                </div>
+                <div class="itemcontent">{{ summary['ctr_total'] }}<span class="unit">%</span>
+                </div>
+                <div class="itemtitle">클릭단가(기타영역)
+                </div>
+                <div class="itemcontent">{{ summary['cpc_etc'] }} <span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-5">
+                <div class="itemtitle">노출채널별 클릭율/클릭단가 비교
+                </div>
+                <div class="itemcontent">
+                    <canvas id="chart_groupreport_ctrcpcbydisp" style="width:100%; height:150px;" ></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="itemtitle" style="margin-top:20px;">일자별 클릭단가, 클릭율
+                </div>
+                <div class="itemcontent" style="width:100%; padding-top:10px;">
+                    <canvas id="chart_groupreport_dailycpcctr" style="width:100%; height:200px;" ></canvas>
+                </div>
+            </div>  
+        </div>
+    </div>
+
+    <!-- 광고노출 채널별 광고성과 -->
+    <div class="section_title" id = "pannel_6" onclick="show_set_pannel(this.id)">광고노출 채널별 광고성과표<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_6c"class="section_content">
+        <table id="table_groupreport_report_disp" class="stripe nowrap" style="width:100%;" ></table>
+    </div>
+    
+    <!-- 옵션별 광고성과 -->
+    <div class="section_title" id = "pannel_7" onclick="show_set_pannel(this.id)">캠페인 상품(옵션)별 광고성과<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_7c"class="section_content">
+        <table id="table_groupreport_report_option" class="stripe nowrap" style="width:100%;" ></table>
+    </div>
+
+    <!-- 일자별 광고성과 -->
+    <div class="section_title" id = "pannel_8" onclick="show_set_pannel(this.id)">일자별 광고성과<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_8c"class="section_content">
+        <table id="table_groupreport_report_date" class="stripe nowrap" style="width:100%;" ></table>
+    </div>
+
+    <!--  키워드 성과-->
+    
+    <div class="section_title" id = "pannel_9" onclick="show_set_pannel(this.id)">키워드별 성과<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_9c"class="section_content">
+        <div class="report_about">
+            <ul>
+                <li>키워드를 클릭하면 제외키워드에 담을 수 있습니다. </li>
+                <li>모든 조정작업을 모은 후 상단 메뉴 [변경 적용하기]에서 실제 광고에 반영하세요. </li>
+            </ul>
+        </div>
+        <div class='longchartdiv  mr-2 ml-2'>
+            <table id="table_groupreport_keyword" class="stripe nowrap" width="100%" ></table>
+        </div>
+    </div>
+    <!-- 수동 키워 CPC 테이블-->
+    {% if groupsetting['bidtype'] == '수동' %}
+    <div class="section_title" id = "pannel_10" onclick="show_set_pannel(this.id)">수동 키워드 성과 및 CPC 조정<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_10c"class="section_content">
+        <div class="row">
+            <div class="col-8">
+                <div class="report_about">
+                    <ul>
+                        <li>키워드의 가격을 변경하면 자동으로 [광고작업리스트]에 반영됩니다.</li>
+                        <li>[광고작업리스트]에서 최종적으로 적용하기 버튼을 누른 후 자동매크로 작업을 통해 실제적용됩니다.</li>
+                        <li>광고 작업리스트에 업데이트 하기 버튼을 누르면, 가격 및 적용이 변경된 모든 키워드가 업데이트 됩니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class='longchartdiv  mr-2 ml-2'>
+            <table id="table_groupreport_mannual_keyword" class="stripe nowrap" width="100%" ></table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 쿠팡 연관검색어 시작-->
+    {% if groupsetting['bidtype'] == '수동' %}
+    
+    <div class="section_title" id = "pannel_11" onclick="show_set_pannel(this.id)">쿠팡 연관 검색어</div>
+    <div id="pannel_11c"class="section_content">
+        <div class="row">
+            <div class="col-8">
+                <div class="report_about">
+                    <ul>
+                        <li>쿠팡의 자동완성 검색어와 검색결과 페이지의 연관검색어를 수집합니다.</li>
+                        <li>검색에 20초 정도 소요되며, 연결 상태에 따라 조금 긴 시간이 소요될 수 있습니다.</li>
+                        <li>검색결과에서 온/오프 스위치를 통해 검색 키워드로 등록할 수 있습니다.</li>
+                        <li>등록 및 변경내용은 자동으로 [광고작업리스트]에 업데이트되며, 해당 페이지에서 적용하기 버튼을 눌러야 윙 시스템에 반영됩니다.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class='longchartdiv  mr-2 ml-2'>
+            <form hx-get="find_rel_keyword_load?groupcode={{ groupcode }}" hx-target="#rel_keyword_load" hx-swap="innerHTML">
+                <div id="rel_keyword_load">
+                    <div class="input_zone">
+                        <input type="text" name="keyword">
+                        <button type="submit" class="macro_on">
+                            <span>연관검색어 가져오기</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    <!-- 쿠팡 연관검색어 끝-->
+    <!-- 블랙 키워드 테이블 -->
+    {% if groupsetting['keywordtargeting'] == 'on' and groupsetting['blacklist'] > 0 %}
+    <div class="section_title" id = "pannel_11" onclick="show_set_pannel(this.id)">블랙(검색제외) 키워드 리스트</div>
+    <div id="pannel_11c"class="section_content">
+        <div class='longchartdiv  mr-2 ml-2'>
+            <table id="table_groupreport_black_keyword" class="stripe nowrap" width="100%" ></table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!--리포트 날짜선택 모달 창-->
+    <div class="modal fade" id="modal-form-signup" tabindex="-1" role="dialog" aria-labelledby="modal-form-signup" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <div class="card bg-primary shadow-soft border-light p-4">
+                        <button type="button" id="modal_close" class="close ml-auto" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <div class="card-header text-center pb-0">
+                            <h2 class="mb-0 h5">보고서 기간 설정</h2>
+                            <div id="api_result"></div>  
+                        </div>
+                        <div class="card-body">
+                            <label>보고서 기간을 설정해 주세요.</label>
+                            <form hx-post="{{ url_for('group_page') }}"  hx-target="body" hx-swap="innerHTML" 
+                                hx-vals='{ "groupcode" : "{{ groupcode}}" }'>
+                                <div class="input-daterange datepicker row align-items-center">
+                                    <div class="col-12">
+                                        <label class="h6">From</label>
+                                        <div class="form-group">
+                                            <div class="input-group input-group-border">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                                </div>
+                                                <input id="start_date" class="form-control datepicker" name="start_date" placeholder="Start date"  type="text" value='{{ start_date }}'>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label class="h6">To</label>
+                                            <div class="input-group input-group-border">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                                </div>
+                                                <input id="end_date" class="form-control datepicker" name="end_date" placeholder="End date"  type="text" value='{{ end_date }}'>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-block btn-primary" onclick="myFunction()">보고서 생성하기</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>     
+
+<!-- 데이트피커, 모달 클로즈 -->
+    <script>
+        function myFunction() { document.getElementById("modal_close").click(); };
+        $( function() { $( ".datepicker" ).datepicker(); } );
+    </script>
+
+<!-- 기본 변수 -->
+    <script>
+        var groupcode = '{{ groupcode }}'
+        var campaigncode = '{{groupsetting['campaigncode'] }}'
+        var start_date = '{{ start_date }}'
+        var end_date = '{{ end_date }}'
+        var smarttargeting = '{{ groupsetting['keywordtargeting'] }}'
+        function beforePrintHandler () { for (var id in Chart.instances) { Chart.instances[id].resize(); } }
+    </script> 
+
+<!-- DIV 오픈/닫기 -->
+    <script>
+        function show_set_pannel(id){
+            const element = document.getElementById(id + 'c');
+            if(element.style.display == 'none'){ element.style.display = ""; }else{ element.style.display = "none"; } };
+    </script>
+ 
+<!-- CHART - 데일리 광고비 차트-->
+    <script>
+
+        // 툴팁의 합계
+        var footer = (tooltipItems) => {
+            let sum = 0;
+        
+            tooltipItems.forEach(function(tooltipItem) {
+                var val = tooltipItem.parsed.y ;
+                if (val> 100){sum += val;}
+            });
+            sum = sum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+            return '합계 : ' + sum + '원';
+        };
+
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_groupreport_dailycost",
+            type: "POST",
+            data: JSON.stringify({ groupcode: groupcode, start_date: start_date, end_date : end_date }),
+            success: function(response){
+                var  chart_groupreport_dailycost = Chart.getChart('chart_groupreport_dailycost');
+
+                if (chart_groupreport_dailycost !== undefined) {
+                    chart_groupreport_dailycost.destroy();
+                };
+
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['data']['labels'];
+                
+                var chart_groupreport_dailycost = new Chart( document.getElementById('chart_groupreport_dailycost'), {
+                    type: 'bar', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+                            { label: '검색 영역 광고비 소진율', data: _data['keyword_cost_rate'], type : 'line', yAxisID : 'y2', tension : 0.4 },
+                            { label: '검색 영역', data: _data['keyword_adscost'], yAxisID : 'y1' },
+                            { label: '비검색 영역', data: _data['nonkeyword_adscost'], yAxisID : 'y1' },
+                            { label: '리타켓팅', data: _data['retarget_adscost'], yAxisID : 'y1' },
+                        ],
+                    },
+                    
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index', },
+                        scales: {
+                            x: { stacked: true, },
+                            y1 : { position : 'left', display : true, stacked: true  },
+                            y2 : { position : 'right', display : true, grid : { drawOnChartArea: false } },
+                        },
+                        plugins: { 
+                            title: { display: false },
+                            legend: { position:'bottom', labels: { usePointStyle :true }, display:true, },
+                            tooltip: { callbacks: { footer: footer, } },
+                        }
+                    }
+                });
+                chart_groupreport_dailycost.resize();
+            },
+        });
+
+    </script>
+
+
+<!-- CHART - 노출채널별 광고효율 차트-->
+    <script>
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_groupreport_roasbydisp",
+            type: "POST",
+            data: JSON.stringify({ groupcode: groupcode, start_date: start_date, end_date : end_date }),
+            success: function(response){
+                var  chart_groupreport_roasbydisp = Chart.getChart('chart_groupreport_roasbydisp');
+                
+                if (chart_groupreport_roasbydisp !== undefined) {
+                    chart_groupreport_roasbydisp.destroy();
+                };
+
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['data']['labels'];
+
+                var chart_groupreport_roasbydisp = new Chart( document.getElementById('chart_groupreport_roasbydisp'), {
+                    type: 'bar', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+                            { label : '제로마진 기준ROAS', data : _data['roas_zeromargin'], type :'line' , yAxisID : 'y1' },
+                            { label : '광고효율', data : _data['roasbydisp'] , yAxisID : 'y1' },
+                            { label : '전환율', data : _data['cvrbydisp'] , type :'line' , yAxisID : 'y2' },
+                        ],
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index', },
+                        scales: {
+                            y1 : { position : 'left', display : true},
+                            y2 : { position : 'right', display : true, grid : { drawOnChartArea: false } },
+                        },
+                        plugins: { 
+                            title : { display : false },
+                            legend : { position :'bottom', labels : { usePointStyle : true }, display : true, },
+                        }
+                    }
+                });
+                chart_groupreport_roasbydisp.resize();
+            },
+        });
+
+    </script>
+
+
+
+
+<!-- CHART - 데일리 ROAS 차트-->
+    <script>
+
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_groupreport_dailyroas",
+            type: "POST",
+            data: JSON.stringify({ groupcode : groupcode, start_date : start_date, end_date : end_date }),
+            success: function(response){
+                var chart_groupreport_dailyroas_Status = Chart.getChart('chart_groupreport_dailyroas');
+                if (chart_groupreport_dailyroas_Status !== undefined) { chart_groupreport_dailyroas_Status.destroy(); };
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['data']['labels'];
+                var chart_groupreport_dailyroas = new Chart( document.getElementById('chart_groupreport_dailyroas'), {
+                    type: 'line', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+                            { label : '제로마진 기준 ROAS', data : _data['roas_zeromargin'] , yAxisID : 'y1' },
+                            { label : '결과 ROAS', data : _data['roas'] , yAxisID : 'y1' },
+                            { label : '광고매출', data : _data['adsorderamount'] , yAxisID : 'y2' },
+                            { label : '전환율', data : _data['cvr'] , yAxisID : 'y3' },
+                            { label : '전환단가', data : _data['cps'] , yAxisID : 'y4'},
+                        ],
+                    },
+                    options: {
+                        tension : 0.4,
+                        responsive : false,
+                        maintainAspectRatio : false,
+                        interaction : { intersect: false, mode: 'index', },
+                        scales: {
+                            y1 : { position : 'left', display : true},
+                            y2 : { position : 'right', display : false, grid : { drawOnChartArea: false } },
+                            y3 : { position : 'right', display : false, grid : { drawOnChartArea: false } },
+                            y4 : { position : 'right', display : false, grid : { drawOnChartArea: false } },
+                        },
+                        plugins : { 
+                            title : { display : false },
+                            legend : { position :'bottom', labels : { usePointStyle :true }, display : true, },
+                        }
+                    }
+                });
+                chart_groupreport_dailyroas.resize();
+            },
+        });
+    </script>
+
+
+
+
+<!-- CHART - 노출채널별 클릭율, 클릭단가-->
+    <script>
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_groupreport_ctrcpcbydisp",
+            type: "POST",
+            data: JSON.stringify({ groupcode: groupcode, start_date: start_date, end_date : end_date }),
+            success: function(response){
+                var  chart_groupreport_ctrcpcbydisp = Chart.getChart('chart_groupreport_ctrcpcbydisp');
+                
+                if (chart_groupreport_ctrcpcbydisp !== undefined) {
+                    chart_groupreport_ctrcpcbydisp.destroy();
+                };
+
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['data']['labels'];
+
+                var chart_groupreport_ctrcpcbydisp = new Chart( document.getElementById('chart_groupreport_ctrcpcbydisp'), {
+                    type: 'bar', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+
+                            { label : '클릭단가', data : _data['cpc'] , yAxisID : 'y2' },
+                            { label : '클릭율', data : _data['ctr'], yAxisID : 'y1' },
+                        ],
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index', },
+                        scales: {
+                            y1 : { position : 'right', display : true, grid : { drawOnChartArea: false } },
+                            y2 : { position : 'left', display : true, grid : { drawOnChartArea: false } },
+                        },
+                        plugins: { 
+                            title : { display : false },
+                            legend : { position :'bottom', labels : { usePointStyle : true }, display : true, },
+                        }
+                    }
+                });
+                chart_groupreport_ctrcpcbydisp.resize();
+            },
+        });
+
+    </script>
+
+
+
+
+<!-- CHART - 데일리 cvr, cpc 차트-->
+    <script>
+
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_groupreport_dailycpcctr",
+            type: "POST",
+            data: JSON.stringify({ groupcode : groupcode, start_date : start_date, end_date : end_date }),
+            success: function(response){
+                
+                var chart_groupreport_dailycpcctr_Status = Chart.getChart('chart_groupreport_dailycpcctr');
+                if (chart_groupreport_dailycpcctr_Status !== undefined) { chart_camp_dailyroas_Status.destroy(); };
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['data']['labels'];
+                var chart_groupreport_dailycpcctr = new Chart( document.getElementById('chart_groupreport_dailycpcctr'), {
+                    type: 'line', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+                            { label : '클릭단가', data : _data['cpc'], yAxisID : 'y'  },
+                            { label : '클릭율', data : _data['ctr'], yAxisID : 'y1' },
+                        ],
+                    },
+                    options: {
+                        tension : 0.4,
+                        responsive : false,
+                        maintainAspectRatio : false,
+                        interaction : { intersect: false, mode: 'index', },
+                        scales: {
+                            y : { position : 'left' },
+                            y1 : { position : 'right', display : true, grid : { drawOnChartArea: false } },
+                        },
+                        plugins : { 
+                            title : { display : false },
+                            legend : { position :'bottom', labels : { usePointStyle :true }, display : true, },
+                        }
+                    }
+                });
+                chart_groupreport_dailycpcctr.resize();
+            },
+        });
+    </script>
+
+
+<!-- Table - 노출채널별 광고 성과-->
+    <script>
+        var table_groupreport_report_disp = $('#table_groupreport_report_disp').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_groupreport_report_disp',
+                data: function ( d ) { return JSON.stringify({ groupcode : groupcode , start_date : start_date , end_date : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; }, 
+            },
+            columns: [
+                { data: "dispchannel", title : '노출채널', name : 'dispchannel' },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "adsorderamount", title : '광고매출', name : 'orderamount' },
+                { data: "roas", title : '광고효율', name : 'roas' },
+                { data: "cvr", title : '전환율', name : 'cvr' },
+                { data: "cps", title : '전환단가', name : 'cps' },
+                { data: "impressioncnt", title : '노출수', name : 'impressioncnt' },
+                { data: "clickcnt", title : '클릭수', name : 'clickcnt' },
+                { data: "ctr", title : '쿨릭율', name : 'ctr' },
+            ],
+            columnDefs: [
+                {
+                    targets: [1,2,3,5,6,7],
+                    className: "dt-right",
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+            ],
+            order : [1, 'DESC'],
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            dom : 't',
+            scrollX : true,
+        });
+    </script>
+
+<!-- Table - 옵션별 광고성과-->
+    <script>
+        var table_groupreport_report_option = $('#table_groupreport_report_option').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_groupreport_report_option',
+                data: function ( d ) { return JSON.stringify({groupcode : groupcode , start_date : start_date , end_date : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; }, 
+            },
+            columns: [
+                { data: "prdcode", title : '등록상품코드', name : 'prdcode' },
+                { data: "prdname", title : '등록상품명', name : 'prdnamme',
+                    render : function(data, row, type){ 
+                        returnHTML = '<a href="/api_product_report?prdcode=' + type['prdcode'] + '">' + data+ '</a>' 
+                        return returnHTML }
+                },
+                { data: "optname", title : '옵션명', name : 'optname' },
+                { data: "deltype", title : '배송방식', name : 'deltype' },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "adsorderamount", title : '광고매출', name : 'orderamount' },
+                { data: "roas", title : '광고효율', name : 'roas' },
+                { data: "cvr", title : '전환율', name : 'cvr' },
+                { data: "cps", title : '전환단가', name : 'cps' },
+                { data: "impressioncnt", title : '노출수', name : 'impressioncnt' },
+                { data: "clickcnt", title : '클릭수', name : 'clickcnt' },
+                { data: "ctr", title : '클릭율', name : 'ctr' },
+            ],
+            columnDefs: [
+                { targets: [4,5,6,7,8,9], render : $.fn.DataTable.render.number( ',' ) },
+                { targets: [4,5,6,7,8,9,10,11], className: "dt-right"},
+            ],
+            order : [4, 'DESC'],
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            dom : 't',
+            scrollX : true,
+        });
+    </script>
+
+
+
+<!-- table - 데일리 광고 성과 -->
+    <script>
+        // 주요 지표
+        var table_groupreport_report_date = $('#table_groupreport_report_date').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_groupreport_report_date',
+                data: function ( d ) { return JSON.stringify({groupcode : groupcode , start_date : start_date , end_date : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; },
+            },
+            columns: [
+                { data: "adsdate", title : '일자', name : 'adsdate' },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "adsorderamount", title : '광고매출', name : 'adsorderamount' },
+                { data: "roas", title : '광고효율', name : 'roas' },
+                { data: "cvr", title : '전환율', name : 'cvr' },
+                { data: "cps", title : '전환단가', name : 'cps' },
+                { data: "impressioncnt", title : '노출수', name : 'impressioncnt' },
+                { data: "clickcnt", title : '클릭수', name : 'clickcnt' },
+                { data: "ctr", title : '클릭율', name : 'ctr' },
+            ],
+            columnDefs: [
+                {
+                    targets: [1,2,3,5,6,7],
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+            ],
+            searching : false,
+            processing: true,
+            order : [0, 'ASC'],
+            paging : false,
+            scrollX : true, scrollY:'450px',
+            fixedColumns: {start: 1 },
+            colReorder: true,
+            search: false,
+            dom: "t",
+        });
+    </script>
+
+
+<!-- TABLE - 키워드별 성과지표 -->
+
+    <script>
+        var table_groupreport_keyword = $('#table_groupreport_keyword').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_groupreport_keyword',
+                data: function ( d ) {
+                    return JSON.stringify( { groupcode : groupcode , start_date : start_date, end_date : end_date } ); },
+                dataSrc: function(res) {
+                    var data = res.data;
+                    return data;
+                    },
+                },
+            columns: [
+                { data: "keyword", title : '키워드', name : 'keyword',
+                    render : function (data, row, type, meta){ return '<label for ="' + type['keyword'] + '_' +  groupcode + '">' + data + '</label>'}
+                },
+                {% if groupsetting['keywordtargeting'] == 'on' %}
+                { data: "blacklist", title : '블랙키워드', name : 'optname', 
+                        render : function (data, row, type, meta){
+                        
+                        if (smarttargeting == "on"){
+                            if (data == 'blacklist'){
+                                return '<input role="switch" class="switch" type="checkbox" name = "' + type['keyword'] + '" id="' + type['keyword'] + '_' +  groupcode + '" onchange="add_blacklist(this.id)" checked="true"/>'
+                            }else {
+                                return '<input role="switch" class="switch" type="checkbox" name = "' + type['keyword'] + '" id="' + type['keyword'] + '_' +  groupcode + '" onchange="add_blacklist(this.id)" />'
+                            };
+                        }else{ return '' };
+                    }
+                },
+                {% endif %}
+
+                {% if groupsetting['bidtype'] == '수동' %}
+                { data: "search_keyword", title : '검색키워드', name : 'search_keyword', 
+                     render : function (data, row, type, meta){
+                        if (data == 'on'){
+                            return '<input role="switch" class="switch" type="checkbox" name = "' + type['keyword']  + '" id="search_keyword_' + type['keyword']  + '" onchange="add_searchlist(this.id)" checked/>'
+                        }else{return '<input role="switch" class="switch" type="checkbox" name = "' + type['keyword']  + '" id="search_keyword_' + type['keyword']  + '" onchange="add_searchlist(this.id)" />'}
+                    }
+                },
+                { data: "cpc_pricing", title : '수동키워드 CPC', name : 'cpc_pricing',
+                    render : function(data, row, type, meta){
+                        if ( data == 0 ){ result_cpc = Math.round(Number(type['cpc'] / 10)) * 10; }
+                        else{ result_cpc=data; }
+                        if ( result_cpc < 100 ){ result_cpc =100} ;
+                        returnHTML = '<input type="number" class="cpc_input" id = "new_cpc_input_' + type['keyword'] + '" '
+                        returnHTML = returnHTML + 'name = "' + type['keyword'] + '" '
+                        returnHTML = returnHTML + 'value ="' + result_cpc + '" ' 
+                        if ( type['search_keyword'] == 'off' ){ returnHTML = returnHTML + 'disabled/' }
+                        returnHTML = returnHTML + ' onchange="groupreport_resultkeyword_change_cpc(this.id)"/>'
+                        return returnHTML 
+                    }
+                },
+                {% endif %}
+                { data: "cpc", title : '클릭단가', name : 'cpc' ,
+                    render :function(data, row, type){
+                        return '<span id ="result_cpc_' + type['keyword'] + '">' + data + '</span>'
+                    }
+                },
+                { data: "clickcnt", title : '클릭수', name : 'clickcnt' },
+                { data: "adscost", title : '총 광고비', name : 'adscost' },
+                { data: "roas", title : 'ROAS', name : 'roas' },
+                { data: "orderamount", title : '전환매출', name : 'orderamount' },
+                { data: "orderq", title : '전환수', name : 'orderq' }, 
+                { data: "cvr", title : '전환율', name : 'cvr' },
+                { data: "impressioncnt", title : '노출수', name : 'impressioncnt' },
+                { data: "ctr", title : '클릭율', name : 'ctr' },
+            ],
+            columnDefs: [
+                { targets: [3,4,5,6,7,9], render : $.fn.DataTable.render.number( ',' ) },
+                { targets: [4,5,6,7,8,9], className: "dt-right", },
+                { targets: [0,1,2,3], className: "dt-center", },
+                { targets: [0], className: "outer_table_td",  },
+            ],
+            layout: {
+                topEnd: { buttons : [ { extend: 'copy',  className: 'copyButton' }, ] },
+                topStart : 'search'
+            },
+            fixedColumns: { start: 1 },
+            order: [[4, 'desc']],
+            searching : true,
+            processing: true,
+            paging : false,
+            scrollX : true, scrollY:'600px',
+        });
+    </script>
+
+
+
+<!-- TABLE - 수동 키워드 가격조절 -->
+    <script>
+
+        var toolbar = document.createElement('div');
+        in_html = "<div class='sel_all'> <input type='checkbox' name='animal'  id='chk_all' value='selectall' onclick='selectAll(this)'/><label for='chk_all' style='margin-right:20px;'>전체선택/해제</label> </div>"
+        in_html = in_html + '<button id="plus10Btn" class="cpc_con_btn">+ 10원</button>'
+        in_html = in_html + '<button id="plus100Btn" class="cpc_con_btn">+ 100원</button>'   
+        in_html = in_html + '<button id="minus10Btn" class="cpc_con_btn">- 10원</button>'
+        in_html = in_html + '<button id="minus100Btn" class="cpc_con_btn">- 100원</button>'
+        in_html = in_html + '<input type="number" id="commonValueInput" placeholder="변경할 값"  class="cpc_con_input">'
+        in_html = in_html + '<button id="changesameval" class="cpc_con_btn">선택키워드 일괄입력</button>'
+        in_html = in_html + ' <button id="cpc_reset" class="cpc_con_btn" onclick="cpc_reset()">전체취소</button>'
+        toolbar.innerHTML = in_html;
+
+        var table_groupreport_mannual_keyword = $('#table_groupreport_mannual_keyword').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_groupreport_mannual_keyword',
+                data: function ( d ) {
+                    return JSON.stringify( { groupcode : groupcode , start_date : start_date, end_date : end_date } ); },
+                dataSrc: function(res) {
+                    var data = res.data;
+                    return data;
+                    },
+                },
+            columns: [
+                { title : '선택', name : 'select', 
+                    render : function (data, row, type, meta) {
+                        return '<input type="checkbox" class="rowCheckbox" id="' + type['keyword'] + '"">' 
+                    } 
+                },
+                { data: "keyword", title : '키워드', name : 'keyword',
+                    render : function (data, row, type, meta){
+                        return '<label for = "' + type['keyword'] + '" class = "keyword_col">' + type['keyword'] + '</label>'
+                    },
+                },
+                { data: "keyword", title : '검색어 삭제', name : 'keyword',
+                    render : function (data, row, type, meta){
+                        return '<input role="switch" class="switch" type="checkbox" name = "' + type['keyword'] + '" id="delete_search_keyword_' + type['keyword'] + '" onchange="add_searchlist(this.id)" checked="true"/>'
+                    },
+                },
+                { data: "cpc", title : '현재가', name : 'cpc', render : function (data){ return '<span class="cpc_now">' + data + '</span>'} },
+                { data : 'cpc', title : '변경가', name : 'cpcto', 
+                    render :  function (data, row, type, meta) {
+                        return '<input type="number" id = "cpc_input_' +type['keyword'] +'" name = "' + type['keyword'] + '" class="cpc_input" value="' + data +  '" onchange="groupreport_resultkeyword_change_cpc(this.id)">' 
+                    } 
+                },
+                { data: "real_cpc", title : '클릭단가(결과값)', name : 'real_cpc' },
+                { data: "impressioncnt", title : '노출수', name : 'impressioncnt' },
+                { data: "clickcnt", title : '클릭수', name : 'clickcnt' },
+                { data: "adscost", title : '키워드 총 광고비', name : 'adscost' },
+                { data: "roas", title : '키워드 ROAS', name : 'roas' },
+                { data: "orderamount", title : '전환매출', name : 'orderamount' },
+                { data: "ac-or", title : '전환매출 - 광고비', name : 'ac-or' },
+                { data: "orderq", title : '전환수', name : 'orderq' }, 
+                { data: "cvr", title : '전환율', name : 'cvr' },
+                { data: "ctr", title : '클릭율', name : 'ctr' },
+            ],
+            columnDefs: [
+                {
+                    targets: [3,5,6,7,8,9,10,11,12],
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+                {
+                    targets: [3,4,5,6,7,8,9,10,11,12,13,14],
+                    className: "dt-right",
+                },
+                {
+                    targets: [0, 1,2],
+                    className: "dt-center",
+                },
+                {
+                    targets: [0, 1],
+                    className: "outer_table_td",
+                },
+            ],
+            layout: {
+                topStart : toolbar
+            },
+            fixedColumns: {start: 2 },
+            order: [[8, 'desc']],
+            searching : true,
+            processing: true,
+            paging : false,
+            scrollX : true, scrollY:'600px',
+        });
+    </script>
+
+<!-- Table - 블랙키워드 리스트 -->
+    <script>
+        var table_groupreport_black_keyword = $('#table_groupreport_black_keyword').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_groupreport_black_keyword',
+                data: function ( d ) { return JSON.stringify( { groupcode : groupcode  } ); },
+                dataSrc: function(res) { var data = res.data; return data;  }, },
+            columns: [
+                { data: "black_keyword", title : '키워드', name : 'black_keyword' },
+                { data: "black_keyword", title : '블랙 키워드 ', name : 'switch', 
+                    render : function (data, row, type){ 
+                        return '<label><input role="switch" class="switch" type="checkbox" name = "' + data + '" id="change_black_' + data+ '_' +  groupcode + '" onchange="add_blacklist(this.id)" checked/>'
+                    } 
+                },
+            ],
+            searching : true,
+            processing: true,
+            paging : false,
+            scrollX : true, scrollY:'600px',
+        });
+    </script>
+
+<!--광고 세팅 변경 -->
+    <script>
+        // 그룹이름변경
+            function ajax_group_name(id){
+                const element = document.getElementById(id);
+                var groupname = element.value
+                var groupcode = element.name;
+                $.ajax({
+                    url: '/api_group_name',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'groupname' : groupname },
+                })
+            };
+
+
+        // 그룹 온오프
+            function ajax_group_switch(id){
+                const element = document.getElementById(id);
+                var isChecked=element.checked;
+                if (isChecked == true){
+                    onoff = 'on'
+                }else{
+                    onoff = 'off'
+                }
+                var groupcode = id;
+                $.ajax({
+                    url: '/api_group_onoff',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'onoff' : onoff },
+                })
+            };
+
+        // 그룹 ROAS 변경
+            function ajax_group_roas(id){
+                const element = document.getElementById(id);
+                var roas = element.value
+                var groupcode = element.name;
+                $.ajax({
+                    url: '/api_group_roas',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'roas' : roas },
+                })
+            };
+        // 그룹 스마트타게팅 온오프
+            function ajax_smarttargeting_switch(id){
+                const element = document.getElementById(id);
+                var groupcode = element.name;
+                var input_ele = document.getElementById('smarttargetingpricing_' + groupcode);
+                var isChecked=element.checked;
+                if (isChecked == true){
+                    onoff = 'on';
+                    input_ele.disabled = false;
+                }else{
+                    onoff = 'off';
+                    input_ele.disabled = true;}
+                $.ajax({
+                    url: '/api_smarttargeting_onoff',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'onoff' : onoff },
+                })
+            };
+        
+        // 그룹 스마트타게팅 입찰가 변경
+            function ajax_smarttargeting_pricing(id){
+                const element = document.getElementById(id);
+                var groupcode = element.name
+                var pricing = element.value
+                var pricing = element.value
+                if (pricing < 100){
+                    element.value = 100
+                    pricing = 100
+                }
+                $.ajax({
+                    url: '/api_smarttargeting_pricing',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'pricing' : pricing },
+                })
+            };
+        // 그룹 비검색영역 입찰가 변경
+            ajax_nonkeywordpricing
+            function ajax_nonkeywordpricing(id){
+                const element = document.getElementById(id);
+                var groupcode = element.name
+                var pricing = element.value
+                var pricing = element.value
+                if (pricing < 100){
+                    element.value = 100
+                    pricing = 100
+                }
+                $.ajax({
+                    url: '/api_nonkeyword_pricing',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'pricing' : pricing },
+                })
+            };
+
+        // 블랙키워드 추가 제외
+            function add_blacklist(id){
+                const element = document.getElementById(id);
+                var isChecked=element.checked;
+                if (isChecked == true){ onoff = 'on'
+                }else{ onoff = 'off' }
+                var keyword = element.name;
+                $.ajax({
+                    url: '/api_add_blacklist',
+                    method: 'POST',
+                    data: { 'campaigncode' : campaigncode, 'groupcode' : groupcode, 'keyword' : keyword , 'onoff' : onoff },
+                    dataType : 'text',
+                    success : function(result)
+                    {
+                      if(result == 'cnt_over'){
+                        if (element.checked = false);
+                        alert("제외키워드가 500개를 초과했습니다.");
+                      }
+                    },
+                })
+            };
+            
+        // 검색키워드 추가
+            function add_searchlist(id){
+                const element = document.getElementById(id);
+                var isChecked=element.checked;
+                var keyword = element.name;
+                if (id == 'delete_search_keyword_' + keyword){
+                    var add_searchlist_cpc = document.getElementById('cpc_input_' + keyword)
+                }
+                else{
+                    var add_searchlist_cpc = document.getElementById('new_cpc_input_' + keyword)}
+                if (isChecked == true){ 
+                    onoff = 'on';
+                    add_searchlist_cpc.disabled = false;
+                }else{ 
+                    onoff = 'off';
+                    add_searchlist_cpc.disabled = true;
+                }
+                cpc = add_searchlist_cpc.value;
+                $.ajax({
+                    url: '/api_search_keyword',
+                    method: 'POST',
+                    data: { 'campaigncode' : campaigncode, 'groupcode' : groupcode, 'keyword' : keyword , 'onoff' : onoff, 'cpc':cpc },
+                    dataType : 'text',
+                    success : function(result)
+                    {
+                      if(result == 'cnt_over'){
+                        if (element.checked = false);
+                        alert("검색키워드가 500개를 초과했습니다.");
+                      }
+                    },
+                })
+            };
+
+
+        // CPC 변경 -  전체취소
+            function cpc_reset (){
+                var table =  document.getElementById('table_groupreport_mannual_keyword');
+                var rowList = table.rows;
+                for ( i = 1 ; i < rowList.length; i++){
+                    var row = rowList[i];
+                    row.cells[3].lastChild.value = row.cells[2].innerText;
+                    if (i ==rowList.length -  1){
+                        $.ajax({
+                            data: { 'groupcode' : groupcode },
+                            type: "POST",
+                            url: "/api_cancel_cpc_change",
+                            dataType: "text",
+                        })
+                    }
+                }
+            }
+
+        // CPC 개별 변경
+            function groupreport_resultkeyword_change_cpc (id){
+                const element = document.getElementById(id);
+                var keyword = element.name;
+                var pricing = element.value;
+                if (pricing < 100){
+                    element.value = 100
+                    pricing = 100
+                }
+                $.ajax({
+                    url: "/api_groupreport_resultkeyword_change_cpc",
+                    type: "POST",
+                    data: { 'groupcode' : groupcode, 'keyword' : keyword, 'cpc' : pricing, 'campaigncode':campaigncode }
+                })
+                    }   
+
+        // CPC 변경 - 동일가격 세팅
+            $('#changesameval').click(function(e) {
+                var keywordData = {};
+                keywordData['groupcode'] = groupcode;
+                keywordData['campaigncode'] = campaigncode;
+                e.preventDefault();
+                const fullAmount = $('#commonValueInput').val();
+                var new_cpc = Number(fullAmount)
+                if ( new_cpc  < 100){new_cpc = "100";
+                    };
+                $('tr').each(function() {
+                    if ($(this).find('input[class="rowCheckbox"]:checked').length) {
+                        keyword = $(this).find('label[class="keyword_col"]')[0].innerText
+                        $(this).find('input[class="cpc_input"]').val(new_cpc);
+                        keywordData[keyword] = new_cpc
+                        $('#commonValueInput').val(new_cpc)
+                    }
+                });
+                $.ajax({
+                    dataType: "text",
+                    contentType: "application/json",
+                    url: "/api_groupreport_cpc_change",
+                    type: "POST",
+                    data: JSON.stringify(keywordData),
+            })
+            })
+
+        // CPC 변경 -  10원씩 변화
+            $("#plus10Btn, #minus10Btn").click(function(e) {
+                var keywordData = {};
+                keywordData['groupcode'] = groupcode;
+                keywordData['campaigncode'] = campaigncode;
+                e.preventDefault();
+                var num = this.id === 'plus10Btn' ? 10 : -10;
+                $('tr').each(function() {
+                    if ($(this).find('input[class="rowCheckbox" ]:checked').length) {
+                        keyword = $(this).find('label[class="keyword_col"]')[0].innerText
+                        $(this).find('input[class="cpc_input"]').val(function (i, value) {
+                            
+                        
+                            var newVal = +value + num;
+                            if (newVal < 100){newVal = 100}
+                            keywordData[keyword] = newVal
+                            return newVal;});;
+                    }
+                });
+                $.ajax({
+                    dataType: "text",
+                    contentType: "application/json",
+                    url: "/api_groupreport_cpc_change",
+                    type: "POST",
+                    data: JSON.stringify(keywordData),
+                })
+            })
+
+        // CPC 변경 -  100원씩 변화
+            $("#plus100Btn, #minus100Btn").click(function(e) {
+                var keywordData = {};
+                keywordData['groupcode'] = groupcode;
+                keywordData['campaigncode'] = campaigncode;
+                e.preventDefault();
+                var num = this.id === 'plus100Btn' ? 100 : -100;
+                $('tr').each(function() {
+                    if ($(this).find('input[class="rowCheckbox" ]:checked').length) {
+                        keyword = $(this).find('label[class="keyword_col"]')[0].innerText
+                        $(this).find('input[class="cpc_input"]').val(function (i, value) {
+                            
+                        
+                            var newVal = +value + num;
+                            if (newVal < 100){newVal = 100}
+                            keywordData[keyword] = newVal
+                            return newVal;});;
+                    }
+                });
+                $.ajax({
+                    dataType: "text",
+                    contentType: "application/json",
+                    url: "/api_groupreport_cpc_change",
+                    type: "POST",
+                    data: JSON.stringify(keywordData),
+                })
+            })
+
+        // CPC 변경 -  전체 선택
+            function selectAll(selectAll)  {
+                const checkboxes = document.querySelectorAll('input[class="rowCheckbox"]');
+                checkboxes.forEach((checkbox) => {
+                checkbox.checked = selectAll.checked
+                })
+            }
+    </script>
+        
+
+
+{% endblock %}

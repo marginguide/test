@@ -1,0 +1,28 @@
+{% import "_macros.html" as macros %}
+
+<!doctype html>
+<html lang="en">
+    
+  {{ macros.head() }}
+  
+
+  <body>
+
+
+    {{ macros.navbar() }}
+
+    <div style="margin-left: 200px;">
+      <div class="container my-5" id="tete">
+        {% block content %}
+
+        {% endblock %}
+      </div>
+    </div>
+
+    {{ macros.notice_modal() }}
+    {{ macros.footerScripts() }}
+
+
+  </body>
+  
+</html>

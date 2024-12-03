@@ -1,0 +1,179 @@
+{% macro head() -%}
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Margin-Guide</title>
+        
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+
+
+        <!-- Fontawesome -->
+        <link type="text/css" href="{{ url_for('static', filename='/vendor/@fortawesome/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
+        <!-- 뉴몰피즘 CSS -->
+        <link type="text/css" href="{{ url_for('static', filename='css/neumorphism.css') }}" rel="stylesheet">
+        <!-- HTMx 링크-->
+        <script src="{{ url_for('static', filename='assets/js/htmx.min.js') }}"></script>
+        <!-- HTMX 로딩-->
+        <script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/loading-states.js"></script>
+        <!--custom css 링크-->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}" />
+        <!-- chart js 링크-->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <!-- chart plugin 링크-->
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+        <!-- datatables -->
+        <link href="{{ url_for('static', filename='/vendor/DataTables/datatables.min.css') }}" rel="stylesheet">
+        <script src="{{ url_for('static', filename='/vendor/DataTables/datatables.min.js') }}"></script>
+        <script src="https://nightly.datatables.net/colreorder/js/dataTables.colReorder.min.js"></script>
+        <link rel="stylesheet" href="https://nightly.datatables.net/colreorder/css/colReorder.dataTables.min.css" />
+    </head>
+{%- endmacro %}
+
+{% macro navbar() -%}
+    <header class="header-global" id="content">
+        <div class="left_menusection">
+            <div class="left_menu_logo">
+                <a href="{{ url_for('dashboard') }}" class="main_logo">
+                <img  src="{{ url_for('static', filename='assets/img/white_logo.png') }}" >
+                </a>
+            </div>
+            
+            <div class="left_button_div">
+                <button class="line_btn" type="button" hx-get="/dailyscrawl_loading" hx-swap="innerHTML" hx-target="body">
+                    <i class="fab fa-chrome"></i> 데이터 수집(Daily)
+                </button>
+                <button  class="line_btn" class="macro_on" hx-get="/today_loading" hx-swap="innerHTML" hx-target="body">
+                    <i class="fab fa-chrome"></i> 실시간 실적 수집</button>
+                </button>
+            </div>
+            <div class="left_menu_div">
+                <button class="parent_menu_btn" hx-get="/dashboard"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    메인화면(대시보드)
+                </button>
+                <button class="parent_menu_btn" hx-get="/today_render"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    실시간 실적
+                </button>
+                <button class="parent_menu_btn" hx-get="/period_report_render"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    기간 보고서
+                </button>
+                <button class="parent_menu_btn" hx-get="/api_product_report"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    상품 보고서
+                </button>
+                <button class="parent_menu_btn" hx-get="/adsreport"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    광고 보고서
+                </button>
+                <button class="parent_menu_btn" hx-get="/todolist"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    광고세팅 변경 리스트
+                </button>
+                <button class="parent_menu_btn" hx-get="/prdlist"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    상품 리스트
+                </button>
+                <button class="parent_menu_btn" hx-get="/initialize_page"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    매출 데이터 초기화
+                </button>
+                <button class="parent_menu_btn" hx-get="/selleraccounts"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    계정 관리
+                </button>
+                
+                <button class="parent_menu_btn" hx-get="/howtouse"  hx-swap="innerHTML" hx-target="body" hx-trigger="click">
+                    사용방법
+                </button>
+                <div class="parent_menu_btn">
+                    <div class="kakao_talk_btn" id="kakao-talk-channel-chat-button" data-channel-public-id="_FAxexhn" data-title="question" data-size="small" data-color="yellow" data-shape="pc"  data-support-multiple-densities="true"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+   
+{%- endmacro %}
+
+
+
+
+{% macro footerScripts() -%}
+
+    <!-- 커스텀  js -->
+    <script src="{{ url_for('static', filename='/vendor/customjs/custom.js') }}"></script>
+    <!-- Core -->
+
+
+    <script src="{{ url_for('static', filename='vendor/popper.js/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/headroom.js/dist/headroom.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/customjs/custom.js') }}"></script>
+
+    <!-- Vendor JS -->
+    <script src="{{ url_for('static', filename='vendor/onscreen/dist/on-screen.umd.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/nouislider/distribute/nouislider.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/waypoints/lib/jquery.waypoints.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/jarallax/dist/jarallax.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/jquery.counterup/jquery.counterup.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/jquery.counterup/jquery-countdown/dist/jquery.countdown.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/prismjs/prism.js') }}"></script>
+
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <!-- Neumorphism JS -->
+    <script src="{{ url_for('static', filename='assets/js/neumorphism.js') }}"></script>
+
+
+
+    <script>
+
+        $(document).ready(function() {
+            $("#custom_noti_modal").modal("show");
+        });
+    </script>  
+    <script>
+        $(document).ready(function() {
+          Kakao.Channel.createChatButton({
+            container: '#kakao-talk-channel-chat-button',
+          });
+        });
+      
+        (function(d, s, id) {
+          var js, fjs = d.getElementsByTagName(s)[0];
+          if (d.getElementById(id)) return;
+          js = d.createElement(s); js.id = id;
+          js.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.channel.min.js';
+          js.integrity = 'sha384-PFe+C2S6aXd8v5j//vBqNPP8DMpEqLOw05p9BBajfh7IDWnUTHhNlu+Uxj3wxNej';
+          js.crossOrigin = 'anonymous';
+          fjs.parentNode.insertBefore(js, fjs);
+        })(document, 'script', 'kakao-js-sdk');
+      </script>
+
+{%- endmacro %}
+
+
+{% macro notice_modal() -%}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="modal fade" id="custom_noti_modal" tabindex="-1" role="dialog" aria-labelledby="custom_noti_modal" style="display: none;" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content bg-primary">
+                        <div class="modal-header">
+                            <div class="col-12">
+                                <span class="modal-title modal-icon display-5-lg"><span class="far fa-envelope-open"></span></span><strong>  알림창</strong>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                            </div>
+                        </div>
+                        <div class="modal-body">
+                            <div class="py-3 text-left">
+                                <div class="col-12">
+                                    {% for category, message in messages %}
+                                        <span class= "{{ category }}" style="font-size:14px; font-weight:500; line-height:1.5;"><strong>  {{ message }}</strong></span>
+                                        <hr style="margin-top:10px; margin-bottom:10px;">
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endwith %}
+{%- endmacro %}

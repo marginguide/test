@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page">
+    <div class="page_title">광고세팅 변경작업</div>
+    <div class="page-about">
+        <div>※ 본 자동화 작업은 수정 결과를 보장하지 않습니다. 수정 후 반드시 윙사이트에서 재확인해주세요</div>
+    </div>
+
+
+    <div class="report_about ">
+        <ul>
+            <li>광고보고서에서 변경한 작업리스트입니다.</li>
+            <li>광고세팅 변경하기를 클릭하면, 자동으로 광고수정 작업이 시작됩니다.(최소 1분 정도에서 작업량에 따라 시간이 더 소요됩니다.)</li>
+            <li>작업 종료 후 리스트에 남아있는 항목의 경우 반영에 실패한 항목입니다.</li>
+            <li>작업 후 반드시 윙사이트에서 결과를 재확인해주세요.</li>
+        </ul>
+    </div>
+
+    <button hx-get="change_ads_loading" hx-swap="innerHTML" hx-target="body" class="macro_on">광고세팅 변경하기</button>
+    <table id="table_changeset_list" class="display nowrap gridjs-wrapper" width="100%"></table>
+
+</div>
+
+
+<!-- TABLE - 캠페인 리스트 -->
+<script>
+    var table_changeset_list = $('#table_changeset_list').DataTable({
+        ajax: {
+            method : "GET",
+            contentType: 'application/json;charset=UTF-8',
+            url: '/api_table_changeset_list',
+            dataSrc: function(res) {
+                var data = res.data;
+                return data;
+                },
+            },
+        columns: [
+            { title : '선택', name : 'select', 
+                render : function (data, row, type, meta){
+                    return '<button id="' +  type['campaigncode']  + '_' + type['groupcode']  + '_' + type['settype']  + '_' + type['keyword'] + '" onClick="ajax_delete_list(this.id)" class="table_btn" >삭제</button>'
+                },
+            },
+            { data: "account", title : '계정', name : 'account' },
+            { data: "applied", title : '적용실패', name : 'applied' },
+            { data: "campaigncode", title : '캠페인코드', name : 'campaigncode' },
+            { data: "campaignname", title : '캠페인이름', name : 'campaignname' },
+            { data: "groupcode", title : '그룹코드', name : 'groupcode' },
+            { data: "groupname", title : '그룹이름', name : 'groupname'},
+            { data: "keyword", title : '키워드', name : 'keyword' },
+            { data: "settype", title : '변경내용', name : 'settype' },
+            { data: "prev", title : '기존세팅', name : 'prev' },
+            { data: "toward", title : '변경세팅', name : 'toward' },
+        ],
+        columnDefs: [
+            {
+                targets: [0,1,2,3,4,5,6,7,8,9],
+                className: "dt-right",
+            },
+        ],
+        fixedColumns: {start: 1 },
+        order: [ [1, 'desc'] ],
+        dom : 't',
+        searching : true,
+        processing: true,
+        paging : false,
+        scrollX : true, 
+        colReorder: true,
+    });
+</script>
+<script>
+    
+    function ajax_delete_list(id){
+        var campaigncode = id.split('_')[0]
+        var groupcode = id.split('_')[1]
+        var settype = id.split('_')[2]
+        var keyword = id.split('_')[3]
+
+        $.ajax({
+            url: '/api_delete_change_list',
+            method: 'POST',
+            data: {'campaigncode' : campaigncode , 'groupcode' : groupcode, 'settype':settype,'keyword' : keyword },
+            dataType : 'text',
+            success : function(){table_changeset_list.ajax.reload()}
+        });
+
+        
+    };
+</script>
+{% endblock %}

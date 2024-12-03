@@ -1,0 +1,471 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page">
+    <!-- 보고서 타이틀 및 기간 선택 -->
+    <div class="row sticky">
+        <div class="page_title">기간 보고서</div>
+        <div class="row btn_area">
+            <div class="radiobtn" hx-get="/period_report_render?start_date=1&account={{ account }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" >
+                <input type="radio" id="rt-1" {% if(dayscnt == 1) %}checked{% endif %} />
+                <label for="rt-1">어제</label>
+            </div>
+            <div class="radiobtn" hx-get="/period_report_render?start_date=3&account={{ account }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" >
+                <input type="radio" id="rt-3" {% if(dayscnt == 3) %}checked{% endif %} />
+                <label for="rt-3">3일</label>
+            </div>
+            <div class="radiobtn" hx-get="/period_report_render?start_date=7&account={{ account }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" >
+                <input type="radio" id="rt-7" {% if(dayscnt == 7) %}checked{% endif %} />
+                <label for="rt-7">7일</label>
+            </div>
+            <div class="radiobtn" hx-get="/period_report_render?start_date=14&account={{ account }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" >
+                <input type="radio" id="rt-14" {% if(dayscnt == 14) %}checked{% endif %} />
+                <label for="rt-14">14일</label>
+            </div>
+            <div class="radiobtn" hx-get="/period_report_render?start_date=30&account={{ account }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" >
+                <input type="radio" id="rt-30" {% if(dayscnt == 30) %}checked{% endif %} />
+                <label for="rt-30">30일</label>
+            </div>
+            <div class="radiobtn" hx-get="/period_report_render?start_date=60&account={{ account }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" >
+                <input type="radio" id="rt-60" {% if(dayscnt == 60) %}checked{% endif %} />
+                <label for="rt-60">60일</label>
+            </div>
+            
+            <div class="radiobtn" data-toggle="modal" data-target="#modal-form-signup">
+                <input type="radio" id="rt-selcetdate"  name="start_date" value='rt-selcetdate' {% if(dayscnt == '') %}checked{% endif %}  />
+                <label for="rt-selcetdate">날짜 선택</label>
+            </div>
+            <!-- 계정 선택 -->
+            
+            <select  name = "account" class="custom-select my-1 mr-sm-2"  hx-get="/period_report_render?start_date={{ start_date }}&end_date={{ end_date }}"  hx-target="body" hx-swap="innerHTML" >
+                {% for accountid in accounts %}
+                    <option value="{{ accountid }}" {% if accountid == account %} selected{% endif %}>{% if accountid =='all' %}모든계정 합산{% else %}{{ accountid }}{% endif %}</option>
+                {% endfor %}
+            </select>
+
+        </div>
+    </div>
+    <!-- 페이지 설명 섹션-->
+    <div class="page-about">
+        <span>※ 일평균은 최초/최종 실적발생일의 기간으로 나눈 결과치입니다.</span>
+
+    </div>
+
+    <!-- 매출 및 마진 섹션 -->
+    <div class="section_title" id = "pannel_1" onclick="show_set_pannel(this.id)">주요 실적지표<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_1c" class="section_content">
+        <div class="row">
+            <div class="col-3">
+                <div class="itemtitle">매출
+                </div>
+                <div class="itemcontent">{{ summary['orderamount'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">마진
+                </div>
+                <div class="itemcontent">{{ summary['margin'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">광고비
+                </div>
+                <div class="itemcontent">{{ summary['adscost'] }}<span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">일평균 매출
+                </div>
+                <div class="itemcontent">{{ summary['orderamountperday'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">일평균 마진
+                </div>
+                <div class="itemcontent">{{ summary['marginperday'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">광고효율
+                </div>
+                <div class="itemcontent">{{ summary['roas'] }}<span class="unit">%</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">판매수량
+                </div>
+                <div class="itemcontent">{{ summary['orderq'] }}<span class="unit">개</span>
+                </div>
+                <div class="itemtitle">마진율
+                </div>
+                <div class="itemcontent">{{ summary['marginrate'] }}<span class="unit">%</span>
+                </div>
+                <div class="itemtitle">광고기여매출(전체매출대비 %)
+                </div>
+                <div class="itemcontent">{{ summary['adsorderamount'] }}<span class="unit">원</span>( {{ summary['adsorderrate'] }} %)
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">일평균 판매수량
+                </div>
+                <div class="itemcontent">{{ summary['orderqperday'] }}<span class="unit">개</span>
+                </div>
+                <div class="itemtitle">개당마진
+                </div>
+                <div class="itemcontent">{{ summary['marginper'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">광고기여 마진
+                </div>
+                <div class="itemcontent">{{ summary['campaign_margin'] }}<span class="unit">원</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section_title" id = "pannel_2" onclick="show_set_pannel(this.id)">배송방식별 주요실적<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_2c" class="section_content">
+        <div class="row">
+            <div class="col-12">
+                <div class="itemcontent" style="padding-top :10px;">
+                    <table id="table_period_deltype_result" class="stripe nowrap" width="100%"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section_title" id = "pannel_3" onclick="show_set_pannel(this.id)">상품별 주요실적<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_3c" class="section_content">
+        <div class="row">
+            <div class="col-12">
+                <div class="itemcontent" style="padding-top :10px;">
+                    <div class="report_about">
+                        <ul>
+                            <li>상품명을 클릭하면 해당 상품의 상세실적 보고서 이동합니다.</li>
+                        </ul>
+                    </div>
+                    <table id="table_period_prd_result" class="stripe nowrap" width="100%"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="section_title" id = "pannel_4" onclick="show_set_pannel(this.id)">일별 주요 실적 테이블</div>
+    <div id="pannel_4c" class="section_content">
+        <div style="width: 100%; overflow: auto;"> 
+            <table id="table_period_deltatable" class="stripe nowrap" width="100%">
+                <thead>
+                    <tr>
+                        <th> 날짜 </th>
+                        <th colspan="2">판매수량</th>
+                        <th colspan="2">매출액</th>
+                        <th colspan="2">순익</th>
+                        <th colspan="2">순익률</th>
+                        <th colspan="2">광고비</th>
+                        <th colspan="2">광고성과(보고서)</th>
+                    </tr>
+                    <tr class="hideme"><th>날짜</th><th>판매수량</th><th>수량 변화</th><th>매출액</th><th>매출액 변화</th><th>순익</th><th>순익 변화</th><th>순익률</th><th>순익률 변화</th><th>광고비</th><th>광고비 변화</th><th>광고효율(보고서)</th><th>효율 변화(보고서)</th></tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<!--리포트 날짜선택 모달 창-->
+<div class="modal fade" id="modal-form-signup" tabindex="-1" role="dialog" aria-labelledby="modal-form-signup" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <div class="card bg-primary shadow-soft border-light p-4">
+                    <button type="button" id="modal_close" class="close ml-auto" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <div class="card-header text-center pb-0">
+                        <h2 class="mb-0 h5">보고서 기간 설정</h2>
+                        <div id="api_result"></div>  
+                    </div>
+                    <div class="card-body">
+                        <label>보고서 기간을 설정해 주세요.</label>
+                        <form hx-get="/period_report_render?account={{ account }}"  hx-target="body" hx-swap="innerHTML"  >
+                            <div class="input-daterange datepicker row align-items-center">
+                                <div class="col-12">
+                                    <label class="h6">From</label>
+                                    <div class="form-group">
+                                        <div class="input-group input-group-border">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                            </div>
+                                            <input id="start_date" class="form-control datepicker" name="start_date" placeholder="Start date"  type="text" value='{{ start_date }}'>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="h6">To</label>
+                                        <div class="input-group input-group-border">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                            </div>
+                                            <input id="end_date" class="form-control datepicker" name="end_date" placeholder="End date"  type="text" value='{{ end_date }}'>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-block btn-primary" onclick="myFunction()">보고서 생성하기</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>     
+
+<!-- 데이트피커, 모달 클로즈 -->
+    <script>
+        function myFunction() { document.getElementById("modal_close").click(); };
+        $( function() { $( ".datepicker" ).datepicker(); } );
+    </script>
+
+<!-- 기본 변수 -->
+    <script>
+        var start_date = '{{ start_date }}'
+        var end_date = '{{ end_date }}'
+        var account = '{{ account }}'
+        function beforePrintHandler () { for (var id in Chart.instances) { Chart.instances[id].resize(); } }
+    </script> 
+
+<!-- DIV 오픈/닫기 -->
+    <script>
+        function show_set_pannel(id){
+            const element = document.getElementById(id + 'c');
+            if(element.style.display == 'none'){ element.style.display = ""; }else{ element.style.display = "none"; } };
+    </script>
+ 
+<!-- Table - 배송방식별 실적-->
+    <script>
+        var table_period_deltype_result = $('#table_period_deltype_result').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_period_deltype_result',
+                data: function ( d ) { return JSON.stringify({'account' : account , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; }, 
+            },
+            columns: [
+                { data: "deltype", title : '배송방식', name : 'deltype' },
+                { data: "orderamount", title : '매출', name : 'orderamount' },
+                { data: "orderamountrate", title : '매출비중', name : 'orderamountrate' },
+                { data: "orderq", title : '판매수량', name : 'orderq' },
+                { data: "margin", title : '마진', name : 'margin' },
+                { data: "marginrate", title : '마진율', name : 'marginrate' },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "roas", title : 'ROAS', name : 'roas' },
+            ],
+            columnDefs: [
+                {
+                    targets: [1,2,3,4,5,6,7],
+                    className: "dt-right",
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+            ],
+            order : [1, 'DESC'],
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            dom : 't',
+            scrollX : true
+        });
+    </script>
+
+ 
+
+<!-- Table - 상품별 실적-->
+    <script>
+        var table_period_prd_result = $('#table_period_prd_result').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_period_prd_result',
+                data: function ( d ) { return JSON.stringify({'account' : account , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; }, 
+            },
+            columns: [
+                { data: "account", title : '계정', name : 'account' },
+                { data: "prdcode", title : '상품코드', name : 'prdcode', 
+                    render : function(row, data, type){
+                        returnHTML = '<a href="api_product_report?prdcode=' + type['prdcode'] + '&'
+                        returnHTML = returnHTML + 'start_date={{ start_date }}&end_date={{ end_date }}">' + type['prdcode'] + '</a>'
+                        return returnHTML
+                    }
+                },
+                { data: "thumb", title : '썸네일',
+                    "render": function (data, type, row) {
+                        data = '<img class="card" style="width:35px; margin-left:auto; margin-right:auto;" src="' + row.thumb +'">';
+                        return data;
+                    },
+                },
+                { data: "prdname", title : '상품명', name : 'prdname', 
+                    render : function(row, data, type){
+                        returnHTML = '<a href="api_product_report?prdcode=' + type['prdcode'] + '&'
+                        returnHTML = returnHTML + 'start_date={{ start_date }}&end_date={{ end_date }}">' + type['prdname'] + '</a>'
+                        return returnHTML
+                    }
+                },  
+                { data: "orderamount", title : '매출', name : 'orderamount' },
+                { data: "orderamountrate", title : '매출비중', name : 'orderamountrate' },
+                { data: "orderq", title : '판매수량', name : 'orderq' },
+                { data: "margin", title : '마진', name : 'margin' },
+                { data: "marginrate", title : '마진율', name : 'marginrate' },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "roas", title : 'ROAS', name : 'roas' },
+            ],
+            columnDefs: [
+                {
+                    targets: [4,5,6,7,8,9, 10],
+                    className: "dt-right",
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+            ],
+            order : [4, 'DESC'],
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            dom : 't',
+            scrollX : true
+        });
+    </script>
+
+ <!-- 데일리 데이터 테이블 -->
+<script>
+    // 주요 지표
+    var table_period_deltatable = $('#table_period_deltatable').DataTable({
+		ajax: {
+			method : "POST",
+			contentType: 'application/json;charset=UTF-8',
+			url: '/api_table_period_deltatable',
+			data: function ( d ) {
+				return JSON.stringify({account : account, start_date : start_date, end_date : end_date});
+			  },
+			dataSrc: function(res) {
+				var data = res.data;
+				return data;
+				},
+			},
+		columns: [
+			{ data: "orderdate" },
+			{ data: "orderq" },
+            { 
+                data : "delta_orderq",
+                render: function ( data, type ) {
+                    if (data > 0) {
+                        spantag =  '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data +'</span>';
+                    }
+                    else if (data == 0) {
+                        spantag =  '<span class="ml-2 mr-1"style="font-size:9px;">' + data +'</span>';
+                    }
+                    else if (data < 0) {
+                        spantag =  '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data +'</span>';
+                    }
+                    return spantag;
+                }
+            },
+			{ data: "orderamount" },
+            {
+                data: "delta_orderamount",
+                render: function (data, type) {
+                    if (data > 0) {
+                        spantag = '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data +'</span>';
+                    }
+                    else if (data == 0) {
+                        spantag =  '<span class="ml-2 mr-1"style="font-size:9px;">' + data +'</span>';
+                    }
+                    else if (data < 0) {
+                        spantag = '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data +'</span>';
+                    }
+                    return spantag;
+                }
+            },
+			{ data: "margin" },
+			{ 
+                data: "delta_margin" ,
+                render: function (data, type) {
+                    if (data > 0) {
+                        spantag = '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                    }
+                    else if (data == 0) {
+                        spantag = '<span class="ml-2 mr-1"style="font-size:9px;">' + data + '</span>';
+                    }
+                    else if (data < 0) {
+                        spantag = '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                    }
+                    return spantag;
+                }
+            },
+			{ data: "marginrate" , "render": function (data, type, row) { data = row.marginrate + ' %'; return data; } },
+            { 
+                data: "delta_marginrate" ,
+                render: function (data, type) {
+                    if (data > 0) {
+                        spantag = '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                    }
+                    else if (data == 0) {
+                        spantag = '<span class="ml-2 mr-1"style="font-size:9px;">' + data + '</span>';
+                    }
+                    else if (data < 0) {
+                        spantag = '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                    }
+                    return spantag;
+                }
+            },
+			{ data: "adscost" },
+            { 
+                data: "delta_adscost" ,
+                render: function (data, type) {
+                    if (data > 0) {
+                        spantag = '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                    }
+                    else if (data == 0) {
+                        spantag = '<span class="ml-2 mr-1"style="font-size:9px;">' + data + '</span>';
+                    }
+                    else if (data < 0) {
+                        spantag = '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                    }
+                    return spantag;
+                }
+            },
+			{ data: "roas_report" , "render": function (data, type, row) { data = row.roas_report + ' %'; return data; } },
+            { 
+                data: "delta_roas_report" ,
+                render: function (data, type) {
+                    if (data > 0) {
+                        spantag = '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                    }
+                    else if (data == 0) {
+                        spantag = '<span class="ml-2 mr-1"style="font-size:9px;">' + data + '</span>';
+                    }
+                    else if (data < 0) {
+                        spantag = '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                    }
+                    return spantag;
+                }
+            },
+		],
+        columnDefs: [
+            {
+
+                targets: [1,3,4,5,7,9,11 ],
+                render : $.fn.DataTable.render.number( ',' )
+            },
+            {
+                className: "dt-body-left",
+                targets: [2,4,6,8,10,12 ]
+                
+            },
+            { 
+                targets: [1,3,5,7,9,11 ],
+                width: '250px',  
+            },
+            
+        ],
+        searching : false,
+        order : [0, 'DESC'],
+        processing: true,
+        ordering : false,
+		paging : false,
+		scrollX : true, scrollY:'450px',
+		fixedColumns: {start: 1 },
+        colReorder: true,
+        search: false,
+    	dom: "t",
+	});
+</script>
+{% endblock %}

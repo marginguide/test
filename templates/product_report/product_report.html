@@ -1,0 +1,1155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page_prd">
+    <button type="button" class="collapsible">전체 상품 보기</button>
+    <div class="collapsible_content">
+        <div class="collapsible_container">
+            <table id="table_prdlist" class="display nowrap gridjs-wrapper" width="100%"></table>
+        </div>    
+    </div>
+    <div class="row sticky">
+        <div class="col-1">
+            <div class="prdthumb">
+                <img src = "{{ summary['thumb'] }}"/>
+            </div>
+        </div>
+        <div class="col-10">
+            <div class= "prdname">{{ summary['prdname'] }} </div>
+            <div class="row btn_area">
+                <form >
+                    <div class="radiobtn" hx-post="{{ url_for('api_product_report') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                        hx-vals='{ "start_date": "1", "end_date": "{{ end_date }}", "prdcode" : "{{ prdcode }}" }'>
+                        <input type="radio" id="rt-1" {% if(dayscnt == 1) %}checked{% endif %} />
+                        <label for="rt-1">어제</label>
+                    </div>
+                    <div class="radiobtn" hx-post="{{ url_for('api_product_report') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                        hx-vals='{ "start_date": "3", "end_date": "{{ end_date }}", "prdcode" : "{{ prdcode }}" }'>
+                        <input type="radio" id="rt-3" {% if(dayscnt == 3) %}checked{% endif %} />
+                        <label for="rt-3">3일</label>
+                    </div>
+                    <div class="radiobtn" hx-post="{{ url_for('api_product_report') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                        hx-vals='{ "start_date": "7", "end_date": "{{ end_date }}", "prdcode" : "{{ prdcode }}" }'>
+                        <input type="radio" id="rt-7" {% if(dayscnt == 7) %}checked{% endif %} />
+                        <label for="rt-7">7일</label>
+                    </div>
+                    <div class="radiobtn" hx-post="{{ url_for('api_product_report') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                        hx-vals='{ "start_date": "14", "end_date": "{{ end_date }}", "prdcode" : "{{ prdcode }}" }'>
+                        <input type="radio" id="rt-14" {% if(dayscnt== 14) %}checked{% endif %} />
+                        <label for="rt-14">14일</label>
+                    </div>
+                    <div class="radiobtn" hx-post="{{ url_for('api_product_report') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                        hx-vals='{ "start_date": "30", "end_date": "{{ end_date }}", "prdcode" : "{{ prdcode }}" }'>
+                        <input type="radio" id="rt-30" {% if(dayscnt == 30) %}checked{% endif %} />
+                        <label for="rt-30">30일</label>
+                    </div>
+                    <div class="radiobtn" hx-post="{{ url_for('api_product_report') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                        hx-vals='{ "start_date": "60", "end_date": "{{ end_date }}", "prdcode" : "{{ prdcode }}" }'>
+                        <input type="radio" id="rt-60" {% if(dayscnt == 60) %}checked{% endif %} />
+                        <label for="rt-60">60일</label>
+                    </div>
+                    <div class="radiobtn" data-toggle="modal" data-target="#modal-form-signup">
+                        <input type="radio" id="rt-selcetdate"  name="start_date" value='rt-selcetdate' {% if(dayscnt == '') %}checked{% endif %}  />
+                        <label for="rt-selcetdate">날짜 선택</label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 누적실적 -->
+    <button type="button" class="collapsible">누적실적({{ summary['total_from'] }} 이후)</button>
+    <div class="collapsible_content">
+        <div class="collapsible_container">
+            <div class="row">
+                <div class="col-3">
+                    <div class="itemtitle">누적 매출
+                    </div>
+                    <div class="itemcontent">{{ summary['amounttotal'] }}<span class="unit">원</span>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="itemtitle">누적 판매량
+                    </div>
+                    <div class="itemcontent">{{ summary['soldtotal'] }}<span class="unit">개</span>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="itemtitle">누적 마진
+                    </div>
+                    <div class="itemcontent">{{ summary['margintotal'] }}<span class="unit">원</span>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="itemtitle">누적 마진율
+                    </div>
+                    <div class="itemcontent">{{ summary['marginratetotal'] }}<span class="unit">%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="itemcontent" style="padding-top :10px;">
+                <table id="table_option_cumulate" class="stripe nowrap" width="100%"></table>
+            </div>
+        </div>    
+    </div>
+
+    <!-- 옵션정보 -->
+    <button type="button" class="collapsible">옵션별 비용/기본마진/제로마진 기준 ROAS</button>
+    <div class="collapsible_content">
+        <div class="collapsible_container">
+            <div class="itemcontent" style="padding-top :10px;">
+                <table id="table_option_cost_info" class="stripe nowrap" width="100%"></table>
+                <div class="warn col-8">※ 직접배송상품의 기본마진(율)/제로마진기준은 실배송비/배송비부과액이 제외된 계산결과입니다.</div>
+                <div class="warn col-8">※ 옵션별 비용정보 변경 시 다음 수집부터 변경된 비용이 적용됩니다.</div>
+                <div class="warn col-8">※ 변경한 내용은 별도 저장버튼을 누르지 않아도 DB에 자동 반영됩니다.</div>
+            </div>
+        </div>    
+    </div>
+
+    <!-- 마진 계산기 -->
+    <button type="button" class="collapsible">광고성과(마진) 계산기</button>
+    <div class="collapsible_content">
+        <div class="collapsible_container">
+            <div class="about_cal">
+                1. 광고 마진계산기는 현재 설정된 옵션별 비용정보를 바탕으로 계산됩니다.<br>
+                2. 메인 데이터는 세팅값을 기준으로 옵션별 매출 비율이 동일하다는 가정하에 계산된 값입니다.<br>
+                3. 옵션별 테이블은 세팅값을 기준으로 해당하는 옵션만의 계산된 값입니다.<br>
+                4. 직접 배송상품의 마진계산은 실배송비와 배송비 부과액이 제외된 계산결과입니다.
+            </div>
+            <div class="itemcontent" style="padding-top :10px;">
+            <form hx-post="/api_cal_adsmargin" hx-target="#cal_result" hx-swap="innerHTML" hx-vals='{ "prdcode" : "{{ prdcode }}" }'>
+                <fieldset class="groupbox-border">
+                    <legend class="groupbox-border" style="font-size:20px;">계산 항목 입력</legend>
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="cal_ele_title">목표 광고 수익율</div>
+                                <div class="cal_ele_content">
+                                    <label style="--c: #BD1550">
+                                        <input type="range" id="targetroas" min="100" max="2000" step="10" value="350" name="target_roas">
+                                        <output class="bottom" for="targetroas" style="--min: 100;--max: 2000"></output>
+                                    </label>  
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="cal_ele_title">전체매출대비 광고매출의 비중</div>
+                                <div class="cal_ele_content">
+                                    <label style="--c: #BD1550">
+                                        <input type="range" id="salerate" min="10" max="100" step="5" value="70" name="ads_order_rate">
+                                        <output class="bottom" for="salerate" style="--min:10;--max:100"></output>
+                                    </label>  
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="cal_ele_title">광고비(vat 포함)</div>
+                                <div class="cal_ele_content">
+                                    <label style="--c: #BD1550">
+                                        <input type="range" id="adscost" min="10000" max="100000" step="5000" value="35000"  name="ads_cost">
+                                        <output class="bottom" for="adscost" style="--min:10000; --max:100000"></output>
+                                    </label>  
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <button class="save_cost">광고 성과(마진) 계산하기</button>
+                    
+                    </fieldset>
+                </form>
+                <div id="cal_result"  style="height:650px;">
+                    
+                </div>
+            </div>
+        </div>    
+    </div>
+
+
+    <!-- 재고정보 -->
+    <button type="button" class="collapsible">옵션별 재고 정보 {% if stock_warning != 0 %}<span style="color:red;font-weight:bold;">{{ stock_warning }}개의 재고 주의 알람이 있습니다.</span>{% endif %}</button>
+    <div class="collapsible_content">
+        <div class="collapsible_container">
+            <div class="itemcontent" style="padding-top :10px;">
+                <table id="table_stock_info" class="stripe nowrap" width="100%"></table>
+            </div>
+        </div>    
+    </div>
+
+
+    <!-- 매출 및 마진 섹션 -->
+    <div class="section_title">매출 및 마진<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div class="section_content">
+        <div class="row">
+            <div class="col-3">
+                <div class="itemtitle">매출
+                </div>
+                <div class="itemcontent">{{ summary['orderamount'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">마진
+                </div>
+                <div class="itemcontent">{{ summary['margin'] }}<span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">일평균 매출
+                </div>
+                <div class="itemcontent">{{ summary['orderamountperday'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">일평균 마진
+                </div>
+                <div class="itemcontent">{{ summary['marginperday'] }}<span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">판매수량
+                </div>
+                <div class="itemcontent">{{ summary['orderq'] }}<span class="unit">개</span>
+                </div>
+                <div class="itemtitle">마진율
+                </div>
+                <div class="itemcontent">{{ summary['marginrate'] }}<span class="unit">%</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">일편균 판매수량
+                </div>
+                <div class="itemcontent">{{ summary['orderqperday'] }}<span class="unit">개</span>
+                </div>
+                <div class="itemtitle">개당마진
+                </div>
+                <div class="itemcontent">{{ summary['marginper'] }}<span class="unit">원</span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <div class="itemtitle">옵션별 매출 기여
+                </div>
+                <div class="itemcontent" style="padding-top :10px;">
+                    <canvas id="chart_option_orderamount" style="width: 250px; margin-left:auto;margin-right:auto;" ></canvas>
+                </div>
+            </div>
+            <div class="col-8">
+                <div class="itemtitle">옵션별 기간 실적
+                </div>
+                <div class="itemcontent" style="padding-top :10px;">
+                    <table id="table_option_result" class="stripe nowrap" width="100%"></table>
+                </div>
+            </div>
+        </div>
+        <div class="longchartdiv">
+            <div class="itemtitle">데일리 실적
+            </div>
+            <table id="table_daily_result" class="stripe nowrap" width="100%">
+                <thead>
+                    <tr>
+                        <th> 날짜 </th>
+                        <th colspan="2">판매수량</th>
+                        <th colspan="2">매출액</th>
+                        <th colspan="2">순익</th>
+                        <th colspan="2">순익률</th>
+                    </tr>
+                        <tr class="hideme"><th>날짜</th><th>판매수량</th><th>수량 변화</th><th>매출액</th><th>매출액 변화</th><th>순익</th><th>순익 변화</th><th>순익률</th><th>순익률 변화</th></tr>
+                </thead>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- 광고 보고서 섹션-->
+    <div class="section_title">광고 성과<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div class="section_content">
+        <div class="row">
+            <div class="col-3 ">
+                <div class="itemtitle">광고비
+                </div>
+                <div class="itemcontent">{{ summary['adscost'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">광고매출
+                </div>
+                <div class="itemcontent">{{ summary['adsorderamount'] }}<span class="unit">원</span>
+                </div>
+
+                <div class="itemtitle">ROAS 
+                </div>
+                <div class="itemcontent">{{ summary['roas_report'] }}<span class="unit">%</span>
+                </div>
+
+                <div class="itemtitle">전환단가
+                </div>
+                <div class="itemcontent">{{ summary['cps'] }}<span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">일평균광고비
+                </div>
+                <div class="itemcontent">{{ summary['adscostperday'] }}<span class="unit">원</span>
+                </div>
+                <div class="itemtitle">전체매출 대비 광고매출 비중
+                </div>
+                <div class="itemcontent">{{ summary['adsrate'] }}<span class="unit">%</span>
+                </div>
+                
+                <div class="itemtitle">제로마진 기준 ROAS
+                </div>
+                <div class="itemcontent">{{ summary['roas_zero'] }}<span class="unit">%</span>
+                </div>
+                <div class="itemtitle">전환율
+                </div>
+                <div class="itemcontent">{{ summary['cvr'] }}<span class="unit">%</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="itemtitle">ROAS(보고서) - ROAS(전체매출기준) - ROAS(제로마진 기준)
+                </div>
+                <div class="itemcontent">
+                    <canvas id="chart_3roas" style="width:100%; height:217px; margin-top:20px;" ></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="itemtitle" style="margin-top:20px;">관련 광고그룹 및 성과
+                </div>
+                <div class="itemcontent" style="width:100%; padding-top:10px;">
+                    <table id="table_adsreport_group" class="stripe nowrap" style="width:100%;" ></table>
+                </div>
+            </div>  
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="itemtitle" style="margin-top:20px;">광고 노출 채널별 광고성과
+                </div>
+                <div class="itemcontent" style="width:100%; padding-top:10px;">
+                    <table id="table_adsreport_disp" class="stripe nowrap" style="width:100%;" ></table>
+                </div>
+            </div>  
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="itemtitle" style="margin-top:20px;">옵션별 광고성과
+                </div>
+                <div class="itemcontent" style="width:100%; padding-top:10px;">
+                    <table id="table_adsreport_option" class="stripe nowrap" style="width:100%;" ></table>
+                </div>
+            </div>  
+        </div>
+        <div class="longchartdiv">
+            <div class="itemtitle" style="margin-top:20px;">일간 광고성과
+            </div>
+            <div class="itemcontent" style="width:100%; padding-top:10px;">
+                <table id="table_daily_adsreport" class="stripe nowrap" style="width:100%"></table>
+            </div>
+        </div>
+        <div class="longchartdiv">
+            <div class="itemtitle" style="margin-top:20px;">키워드 광고성과
+            </div>
+            <div class="itemcontent" style="width:100%; padding-top:10px;">
+                <table id="table_keyword_report" class="stripe nowrap" style="width:100%"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 아코디언 -->
+<script>
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+    for (i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.maxHeight){
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + "px";
+        }
+      });
+    }
+</script>
+
+<!-- 상품선택 슬라이드 바 -->
+    <div class="slidebar">
+        <ul>
+            {% for prd in prdlist['prdlists'] %}
+            <li class="list_prd">
+                <form hx-post="/api_product_report" hx-vals='{ "start_date": "{{ start_date }}", "end_date": "{{ end_date }}" }' hx-swap="innerHTML" hx-target="body">
+                    <button class='postbtn' name="prdcode" value="{{ prd['prdcode'] }}">
+                        <span class="icon"><img src="{{ prd['thumb'] }}" class="card" ></span><span>{{ prd['prdname'] }}</span>
+                    </button>
+                </form>
+            </li>
+            {% endfor %}	
+        </ul>
+    </div>
+
+    <!--리포트 날짜선택 모달 창-->
+    <div class="modal fade" id="modal-form-signup" tabindex="-1" role="dialog" aria-labelledby="modal-form-signup" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <div class="card bg-primary shadow-soft border-light p-4">
+                        <button type="button" id="modal_close" class="close ml-auto" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        <div class="card-header text-center pb-0">
+                            <h2 class="mb-0 h5">보고서 기간 설정</h2>
+                            <div id="api_result"></div>  
+                        </div>
+                        <div class="card-body">
+                            <label>보고서 기간을 설정해 주세요.</label>
+                            <form hx-post="{{ url_for('api_product_report') }}"  hx-target="body" hx-swap="innerHTML" 
+                                hx-vals='{ "prdcode" : "{{ prdcode }}" }'>
+                                <div class="input-daterange datepicker row align-items-center">
+                                    <div class="col-12">
+                                        <label class="h6">From</label>
+                                        <div class="form-group">
+                                            <div class="input-group input-group-border">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                                </div>
+                                                <input id="start_date" class="form-control datepicker" name="start_date" placeholder="Start date"  type="text"  value='{{ start_date }}'>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label class="h6">To</label>
+                                            <div class="input-group input-group-border">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                                </div>
+                                                <input id="end_date" class="form-control datepicker" name="end_date" placeholder="End date"  type="text"  value='{{ end_date }}'>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-block btn-primary" onclick="myFunction()">보고서 생성하기</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>     
+
+
+<!-- 데이트피커, 모달 클로즈 -->
+    <script>
+        function myFunction() { document.getElementById("modal_close").click(); };
+        $( function() { $( ".datepicker" ).datepicker(); } );
+    </script>
+
+
+<!-- 기본 변수 -->
+    <script>
+        var prdcode = '{{ prdcode }}'
+        var start_date = '{{ start_date }}'
+        var end_date = '{{ end_date }}'
+        function beforePrintHandler () { for (var id in Chart.instances) { Chart.instances[id].resize(); } }
+    </script> 
+
+    <!-- 상품선택용 테이블-->
+    <script>
+        // 상품리스트
+        var table_prdlist = $('#table_prdlist').DataTable({
+            serverSide : true,
+            processing : true,
+            searching : true,
+            ajax: {
+                type : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_ajax_prdlist',
+            data: function (d) {
+                    d.account = 'all'
+                    return JSON.stringify(d);
+                },
+                dataSrc: function(res) {
+                    var data = res.data;
+                    return data;
+                    },
+                },
+        
+            columns: [
+                {
+                    title: "썸네일",
+                    data: "thumb",
+                    render: function (data, type, row) {
+                        returnHTML = '<a href="api_product_report?prdcode=' + row['prdcode'] + '&start_date={{ start_date }}&end_date={{ end_date }}">'
+                        returnHTML = returnHTML + '<img class="card" style="width:35px; margin-left:auto; margin-right:auto;" src="' + data +'"></a>';
+                        return returnHTML;
+                    }
+                },
+                
+
+                { title: "계정", name : 'account', data: "account",
+                    render : function(data, type, row){
+                        returnHTML = '<a href="api_product_report?prdcode=' + row['prdcode'] + '&'
+                        returnHTML = returnHTML + 'start_date={{ start_date }}&end_date={{ end_date }}">' + data + '</a>'
+                        return returnHTML },
+                },
+
+                { title: "등록상품ID", name : 'prdcode', data: "prdcode",
+                    render : function(data, type, row){ 
+                        returnHTML = '<a href="api_product_report?prdcode=' + row['prdcode'] + '&'
+                        returnHTML = returnHTML + 'start_date={{ start_date }}&end_date={{ end_date }}">' + data + '</a>'
+                        return returnHTML },
+                },
+                { title: "등록상품명", name : 'prdname', data: "prdname",
+                    render : function(data, type, row){
+                        returnHTML = '<a href="api_product_report?prdcode=' + row['prdcode'] + '&'
+                        returnHTML = returnHTML + 'start_date={{ start_date }}&end_date={{ end_date }}">' + data + '</a>'
+                        return returnHTML },
+                },
+
+                { title: "판매상태", name : 'onsale', data: "onsale",
+                    "render": function (data) {
+                    if (data == 1 ) { return '판매중'; }
+                    else { return '판매중지'; }
+                    }
+                },
+                { title: "제품등록일", name : 'createat', data: "createat" },
+                    ],
+            scrollX : true, scrollY:'600px',
+            order: [ [5, 'DESC']],
+            lengthMenu: [50,100, 200, 300]
+
+        });
+    </script>
+
+<!-- Table - 옵션별 누적 매출 정보 -->
+    <script>
+        var table_option_cumulate = $('#table_option_cumulate').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_option_cumulate',
+                data: function () { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date, 'end_date' : end_date }) },
+                dataSrc: function(res) { var data = res.data; return data; }, },
+            columns: [
+                { data: "deltype", title : '판매방식', name : 'deltype' },
+                { data: "optname", title : '옵션명', name : 'optname' },
+                { data: "optcode", title : '옵션코드', name : 'optcode' },
+                { data: "price", title : '판매가', name : 'price' },
+                { data: "orderamount", title : '누적매출', name : 'orderamount' },
+                { data: "orderq", title : '누적판매수량', name : 'orderq' },
+                { data: "margin", title : '누적마진', name : 'margin' },
+                { data: "marginrate", title : '누적마진율', name : 'marginrate' },
+            ],
+            columnDefs: [
+                { targets: [3,4,5,6], className: "fee-col", render : $.fn.DataTable.render.number( ',' ) },
+                { targets: [0,2], class : 'text-center' },
+            ],
+            order: [[4, 'desc']],
+            dom : 't',
+            fixedColumns: {start: 2 },
+            ordering:true,
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            scrollX : true, scrollY:'200px',
+        });
+    </script>
+
+
+
+<!-- Table - 옵션 비용정보 및 비용 수정 -->
+<script>
+    function change_cost(id){
+        const element = document.getElementById(id);
+        var costval = element.value;
+        var id = id;
+        console.log(id)
+        $.ajax({
+            url: '/api_cost_change',
+            method: 'POST',
+            data: {'id' : id , 'costval' : costval },
+            dataType : 'text',
+            success: function () { $("#table_option_cost_info").DataTable().ajax.reload(); }
+        })
+    };
+</script>
+
+<script>
+    var table_option_cost_info = $('#table_option_cost_info').DataTable({
+        ajax: {
+            method : "POST",
+            contentType: 'application/json;charset=UTF-8',
+            url: '/api_table_option_cost_info',
+            data: function () { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date, 'end_date' : end_date }) },
+            dataSrc: function(res) { var data = res.data; return data; }, },
+        columns: [
+            { data: "deltype", title : '판매방식', name : 'deltype' },
+            { data: "optname", title : '옵션명', name : 'optname' },
+            { data: "optcode", title : '옵션코드', name : 'optcode' },
+            { data: "price", title : '판매가', name : 'price' },
+            { data: "margin", title : '기본마진', name : 'margin' },
+            { data: "margin_rate", title : '기본 마진율', name : 'margin_rate' },
+            { data: "zero_margin_roas", title : '제로마진기준ROAS', name : 'zero_margin_roas' },
+            { data: "coupang_fee", title : '수수료', name : 'coupang_fee' },
+            { data: "prdcost", title : '제품원가', name : 'prdcost',
+                "render": function (data, type, row, meta) {
+                    rendhtml = '<input type="number" id="prdcost_'+ row['optcode'] 
+                    if (row['prdcost_from'] == 'df'){
+                        rendhtml = '<input type="number" style = "color:#b3b3b3;" id="prdcost_'+ row['optcode'] 
+                    }
+                    rendhtml = rendhtml + '" class="edit_cost" name = "prdcost" value="'+ row['prdcost']
+                    rendhtml = rendhtml + '" onchange="change_cost(this.id)"/>'
+                    return rendhtml;
+                    }
+            },
+            { data: "realshipcost", title : '실배송비', name : 'realshipcost',
+                "render": function (data, type, row, meta) {
+                    if (row['deltype'] == 'direct'){
+                        rendhtml = '<input type="number" id="realshipcost_'+ row['optcode']
+                        if (row['realshipcost_from'] == 'df'){
+                            rendhtml = '<input type="number" style = "color:#b3b3b3;" id="realshipcost_'+ row['optcode'] 
+                        }
+                        rendhtml = rendhtml + '" class="edit_cost" name = "realshipcost" value="'+ row['realshipcost']
+                        rendhtml = rendhtml + '" onchange="change_cost(this.id)"/>'}
+                    else{rendhtml = ''}
+                    return rendhtml;
+                }
+            },
+            { data: "jetinoutcost", title : '제트입출고비', name : 'jetinoutcost',
+                "render": function (data, type, row, meta) {
+                    if (row['deltype'] == 'jet'){
+                        rendhtml = '<input type="number" id="jetinoutcost_'+ row['optcode']
+                        if (row['jetinoutcost_from'] == 'df'){
+                            rendhtml = '<input type="number" style = "color:#b3b3b3;" id="jetinoutcost_'+ row['optcode'] 
+                        }
+                        rendhtml = rendhtml + '" class="edit_cost" name = "jetinoutcost" value="'+ row['jetinoutcost']
+                        rendhtml = rendhtml + '" onchange="change_cost(this.id)"/>'}
+                        else{ rendhtml = '' } 
+                        return rendhtml;
+                }
+            },
+            { data: "jetshipcost", title : '제트배송비', name : 'jetshipcost',
+                "render": function (data, type, row, meta) {
+                    if (row['deltype'] == 'jet'){
+                        rendhtml = '<input type="number" id="jetshipcost_'+ row['optcode']
+                        if (row['jetshipcost_from'] == 'df'){
+                            rendhtml = '<input type="number" style = "color:#b3b3b3;" id="jetshipcost_'+ row['optcode'] 
+                        }
+                        rendhtml = rendhtml + '" class="edit_cost" name = "jetshipcost" value="'+ row['jetshipcost']
+                        rendhtml = rendhtml + '" onchange="change_cost(this.id)"/>'}
+                    else{ rendhtml = '' }
+                    return rendhtml;
+                }
+            },
+        ],
+        columnDefs: [
+            { targets: [3,4,5,6,7], className: "fee-col", render : $.fn.DataTable.render.number( ',' ) },
+            { targets: [0,2], class : 'text-center' },
+            { targets: [0, 1], className: "outer_table_td", },
+        ],
+        order: [[2, 'asc']],
+        dom : 't',
+        fixedColumns: {start: 2 },
+        ordering:true,
+        searching : false,
+        processing: true,
+        colReorder: true,
+        paging : false,
+        scrollX : true, scrollY:'300px',
+    });
+</script>
+
+<!-- Table - 옵션별 재고 정보 -->
+<script>
+    var table_stock_info = $('#table_stock_info').DataTable({
+        ajax: {
+            method : "POST",
+            contentType: 'application/json;charset=UTF-8',
+            url: '/api_table_option_stock',
+            data: function () { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date, 'end_date' : end_date }) },
+            dataSrc: function(res) { var data = res.data; return data; }, },
+        columns: [
+            { data: "deltype", title : '판매방식', name : 'deltype' },
+            { data: "optname", title : '옵션명', name : 'optname' },
+            { data: "optcode", title : '옵션코드', name : 'optcode' },
+            { data: "stock", title : '재고', name : 'stock' },
+            { data: "soldperday", title : '일평균판매(7일)', name : 'soldperday' },
+            { data: "estimatesoldout", title : '품절예상일', name : 'estimatesoldout',
+                render: function(data, type, row) {
+                    let color = 'black';
+                    let optname = row['optname']
+                    if ( data == '품절' ){ color = 'red' }
+                        else if ( data < 8 ){ color = 'orange' }
+                        return `<span style="color:${color}">${data}</span>`
+                }
+            },
+        ],
+        columnDefs: [
+            { targets: [3], className: "fee-col", render : $.fn.DataTable.render.number( ',' ) },
+            { targets: [0,1,2,3,4,5],  class : 'text-center' },
+        ],
+        order: [[3, 'asc']],
+        dom : 't',
+        fixedColumns: {start: 2 },
+        ordering:true,
+        searching : false,
+        processing: true,
+        colReorder: true,
+        paging : false,
+        scrollX : true, 
+        {% if summary['opt_cnt'] > 10 %}
+        scrollY:'300px',
+        {% endif %}
+    });
+</script>
+
+
+
+
+
+<!-- Chart - 옵션별 매출 -->
+    <script>
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_option_orderamount",
+            type: "POST",
+            data: JSON.stringify({ prdcode : prdcode, start_date : start_date, end_date : end_date }),
+            success: function(response){
+                var  chart_option_orderamount = Chart.getChart('chart_option_orderamount');
+                if (chart_option_orderamount !== undefined) {
+                    chart_option_orderamount.destroy();
+                };
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['labels'];
+                
+                var chart_option_orderamount = new Chart( document.getElementById('chart_option_orderamount'), {
+                    type: 'doughnut', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+                            { label: '매출', data: _data },
+                        ],
+                    },
+                    options: {
+                        responsive: false,
+                        plugins: { 
+                            title: { display: false },
+                            legend: { 
+                                display:false,
+                            }
+                        }
+                    }
+                });
+                chart_option_orderamount.resize();
+            },
+        });
+    </script>
+
+<!-- Table - 옵션별 실적 -->
+    <script>
+        var table_option_result = $('#table_option_result').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_option_result',
+                data: function ( d ) { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; }, 
+            },
+            columns: [
+                { data: "optname", title : '옵션명', name : 'optname' },
+                { data: "deltype", title : '판매방식', name : 'deltype' },
+                { data: "optcode", title : '옵션코드', name : 'optcode' },
+                { data: "orderamount", title : '매출', name : 'orderamount' },
+                { data: "orderq", title : '판매수량', name : 'orderq' },
+                { data: "margin", title : '마진', name : 'margin' },
+                { data: "marginrate", title : '마진율', name : 'marginrate' },
+                { data: "marginper", title : '개당마진', name : 'marginper' },
+            ],
+            columnDefs: [
+                {
+                    targets: [3, 4, 5, 6, 7],
+                    className: "dt-right",
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+            ],
+            order : [3, 'DESC'],
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            dom : 't',
+            scrollX : true, scrollY:'200px',
+        });
+    </script>
+
+
+
+
+<!-- table - 데일리 성과 -->
+    <script>
+        // 주요 지표
+        var table_daily_result = $('#table_daily_result').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_daily_result',
+                data: function ( d ) { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; },
+            },
+            columns: [
+                { data: "orderdate" },
+                { data: "orderq" },
+                { data : "delta_orderq",
+                    render: function ( data, type ) {
+                        if (data > 0) {
+                            spantag =  '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data +'</span>';
+                        }
+                        else if (data == 0) {
+                            spantag =  '<span class="ml-2 mr-1"style="font-size:9px;">' + data +'</span>';
+                        }
+                        else if (data < 0) {
+                            spantag =  '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data +'</span>';
+                        }
+                        return spantag;
+                    }
+                },
+                { data: "orderamount" },
+                { data: "delta_orderamount",
+                    render: function (data, type) {
+                        if (data > 0) {
+                            spantag = '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data +'</span>';
+                        }
+                        else if (data == 0) {
+                            spantag =  '<span class="ml-2 mr-1"style="font-size:9px;">' + data +'</span>';
+                        }
+                        else if (data < 0) {
+                            spantag = '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data +'</span>';
+                        }
+                        return spantag;
+                    }
+                },
+                { data: "margin" },
+                { data: "delta_margin" ,
+                    render: function (data, type) {
+                        if (data > 0) {
+                            spantag = '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                        }
+                        else if (data == 0) {
+                            spantag = '<span class="ml-2 mr-1"style="font-size:9px;">' + data + '</span>';
+                        }
+                        else if (data < 0) {
+                            spantag = '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                        }
+                        return spantag;
+                    }
+                },
+                { data: "marginrate" , "render": function (data, type, row) { data = row.marginrate + ' %'; return data; } },
+                { data: "delta_marginrate" ,
+                    render: function (data, type) {
+                        if (data > 0) {
+                            spantag = '<span class="fa fa-caret-up alert-danger ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                        }
+                        else if (data == 0) {
+                            spantag = '<span class="ml-2 mr-1"style="font-size:9px;">' + data + '</span>';
+                        }
+                        else if (data < 0) {
+                            spantag = '<span class="fa fa-caret-down alert-info ml-2 mr-1"></span><span style="font-size:9px;">' + data + '</span>';
+                        }
+                        return spantag;
+                    }
+                },
+            ],
+            columnDefs: [
+                {
+                    targets: [1,3,4,5,7],
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+                {
+                    className: "dt-body-left",
+                    targets: [2,4,6,8]
+                },
+                { 
+                    targets: [1,3,5,7],
+                    width: '250px',  
+                },
+            ],
+            searching : false,
+            processing: true,
+            order : [0, 'ASC'],
+            paging : false,
+            scrollX : true, scrollY:'450px',
+            fixedColumns: {start: 1 },
+            colReorder: true,
+            search: false,
+            dom: "t",
+        });
+    </script>
+
+<!-- Chart  - ROAS 비교 Bar Chart-->
+    <script>
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_3roas",
+            type: "POST",
+            data: JSON.stringify({ prdcode : prdcode, start_date : start_date, end_date : end_date }),
+            success: function(response){
+                var  chart_3roas = Chart.getChart('chart_3roas');
+                if (chart_3roas !== undefined) {
+                    chart_3roas.destroy();
+                };
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['data']['labels'];
+                
+                var chart_3roas = new Chart( document.getElementById('chart_3roas'), {
+                    type: 'bar', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+                            { label: '광고보고서 ROAS', data: _data['roas_result']},
+                            { label: '총매출대비 ROAS', data: _data['roas_expand']},
+                            { label: '제로마진기준 ROAS', data: _data['roas_zero']},
+                        ],
+                    },
+                    options: {
+                        responsive: false,
+                        interaction: { intersect: false, mode: 'index', },
+                        plugins: { position:'top', labels: { usePointStyle :true }, display:true, }
+                    }
+                });
+                chart_3roas.resize();
+            },
+        });
+    </script>
+
+
+
+<!-- Table 관련 광고그룹 리포트 -->
+    <script>
+        var table_adsreport_group = $('#table_adsreport_group').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_adsreport_group',
+                data: function ( d ) { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; }, 
+            },
+            columns: [
+                { data: "groupcode", title : '광고그룹코드', name : 'groupcode',
+                    render : function(data){return '<a href="/group_page?groupcode=' + data + '">' + data + '</a>'}
+                },
+                { data: "groupname", title : '광고그룹명', name : 'groupname',
+                    render : function(data, row, type){
+                        if (data == '미상'){
+                            var htmlcode = data
+                        }else{var htmlcode = '<a href="/group_page?groupcode='+ type['groupcode'] + '">' + data + '</a>'}
+                        
+                        return htmlcode}
+                },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "adsorderamount", title : '광고매출', name : 'adsorderamount' },
+                { data: "roas", title : '광고효율', name : 'roas' },
+            ],
+            columnDefs: [
+                {
+                    targets: [2,3,4],
+                    className: "dt-right",
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+                {
+                    targets: [0,1,],
+                    className : 'text-center' 
+                },
+            ],
+            order : [2, 'DESC'],
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            dom : 't',
+            scrollX : true,
+        });
+    </script>
+
+<!-- Table 노출채널별 광고 성과-->
+    <script>
+        var table_adsreport_disp = $('#table_adsreport_disp').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_adsreport_disp',
+                data: function ( d ) { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; }, 
+            },
+            columns: [
+                { data: "dispchannel", title : '노출채널', name : 'dispchannel' },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "adsorderamount", title : '광고매출', name : 'orderamount' },
+                { data: "roas", title : '광고효율', name : 'roas' },
+                { data: "cvr", title : '전환율', name : 'cvr' },
+                { data: "cps", title : '전환단가', name : 'cps' },
+                { data: "impressioncnt", title : '노출수', name : 'impressioncnt' },
+                { data: "clickcnt", title : '클릭수', name : 'clickcnt' },
+                { data: "ctr", title : '쿨릭율', name : 'ctr' },
+            ],
+            columnDefs: [
+                {
+                    targets: [1,2,3,5,6,7],
+                    className: "dt-right",
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+            ],
+            order : [1, 'DESC'],
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            dom : 't',
+            scrollX : true,
+        });
+    </script>
+
+<!-- Table 옵션별 광고성과-->
+    <script>
+        var table_adsreport_option = $('#table_adsreport_option').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_adsreport_option',
+                data: function ( d ) { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; }, 
+            },
+            columns: [
+                { data: "optname", title : '옵션명', name : 'optname' },
+                { data: "deltype", title : '배송방식', name : 'deltype' },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "adsorderamount", title : '광고매출', name : 'orderamount' },
+                { data: "roas", title : '광고효율', name : 'roas' },
+                { data: "cvr", title : '전환율', name : 'cvr' },
+                { data: "cps", title : '전환단가', name : 'cps' },
+                { data: "impressioncnt", title : '노출수', name : 'impressioncnt' },
+                { data: "clickcnt", title : '클릭수', name : 'clickcnt' },
+                { data: "ctr", title : '쿨릭율', name : 'ctr' },
+            ],
+            columnDefs: [
+                {
+                    targets: [1,2,3,4,6,7,8],
+                    className: "dt-right",
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+            ],
+            order : [1, 'DESC'],
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            dom : 't',
+            scrollX : true,
+        });
+    </script>
+
+<!-- table - 데일리 광고 성과 -->
+    <script>
+        // 주요 지표
+        var table_daily_adsreport = $('#table_daily_adsreport').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_daily_adsreport',
+                data: function ( d ) { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) { var data = res.data; return data; },
+            },
+            columns: [
+                { data: "adsdate", title : '일자', name : 'adsdate' },
+                { data: "adscost", title : '광고비', name : 'adscost' },
+                { data: "adsorderamount", title : '광고매출', name : 'adsorderamount' },
+                { data: "roas", title : '광고효율', name : 'roas' },
+                { data: "cvr", title : '전환율', name : 'cvr' },
+                { data: "cps", title : '전환단가', name : 'cps' },
+                { data: "impressioncnt", title : '노출수', name : 'impressioncnt' },
+                { data: "clickcnt", title : '클릭수', name : 'clickcnt' },
+                { data: "ctr", title : '클릭율', name : 'ctr' },
+            ],
+            columnDefs: [
+                {
+                    targets: [1,2,3,5,6,7],
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+            ],
+            searching : false,
+            processing: true,
+            order : [0, 'ASC'],
+            paging : false,
+            scrollX : true, scrollY:'450px',
+            fixedColumns: {start: 1 },
+            colReorder: true,
+            search: false,
+            dom: "t",
+        });
+    </script>
+
+
+<!-- TABLE - 키워드별 성과지표 -->
+    <script>
+        var table_keyword_report = $('#table_keyword_report').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_keyword_report',
+                data: function ( d ) { return JSON.stringify({'prdcode' : prdcode , 'start_date' : start_date , 'end_date' : end_date }); },
+                dataSrc: function(res) {
+                    var data = res.data;
+                    return data;
+                    },
+                },
+            columns: [
+                { data: "keyword", title : '키워드', name : 'optname' },
+                { data: "cpc", title : '클릭단가', name : 'costrate' },
+                { data: "clickcnt", title : '클릭수', name : 'costrate' },
+                { data: "adscost", title : '키워드 총 광고비', name : 'costrate' },
+                { data: "roas", title : '키워드 ROAS', name : 'costrate' },
+                { data: "orderamount", title : '전환매출', name : 'costrate' },
+                { data: "ac-or", title : '전환매출 - 광고비', name : 'costrate' },
+                { data: "orderq", title : '전환수', name : 'costrate' }, 
+                { data: "cvr", title : '전환율', name : 'costrate' },
+                { data: "impressioncnt", title : '노출수', name : 'adscost' },
+                { data: "ctr", title : '클릭율', name : 'costrate' },
+            ],
+            columnDefs: [
+                {
+                    targets: [1,2,3,4,5,6,7,9],
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+                {
+                    targets: [1,2,3,4,5,6,7,8,9,10 ],
+                    className: "dt-right",
+                },
+                {
+                    targets: [0],
+                    className: "dt-center outer_table_td",
+                },
+            ],
+            layout: {
+                topStart: {
+                    buttons: ['columnsToggle']
+                },
+                topEnd: {
+                    buttons : [
+                    {
+                        extend: 'copy',  className: 'copyButton'
+                    },
+                    ]
+                }
+            },
+            fixedColumns: {start: 1 },
+            order: [[3, 'desc']],
+            searching : false,
+            processing: true,
+            paging : false,
+            scrollX : true, scrollY:'600px',
+            colReorder: true,
+        });
+
+    </script>
+
+{% endblock %}

@@ -1,0 +1,662 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page">
+    <!-- 보고서 타이틀 및 기간 선택 -->
+    <div class="row sticky">
+        <div class="page_title">기간 광고실적 및 캠페인리스트</div>
+        <div class="row btn_area">
+            <form >
+                <div class="radiobtn" hx-get="{{ url_for('adsreport') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{"start_date" : "1", "end_date" : "{{ end_date }}" }'>
+                    <input type="radio" id="rt-1" {% if(start_date_cnt == '1') %}checked{% endif %} />
+                    <label for="rt-1">어제</label>
+                </div>
+                <div class="radiobtn" hx-get="{{ url_for('adsreport') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{"start_date": "3","end_date": "{{ end_date }}"}'>
+                    <input type="radio" id="rt-3" {% if(start_date_cnt == '3') %}checked{% endif %} />
+                    <label for="rt-3">3일</label>
+                </div>
+                <div class="radiobtn" hx-get="{{ url_for('adsreport') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{"start_date": "7","end_date": "{{ end_date }}"}'>
+                    <input type="radio" id="rt-7" {% if(start_date_cnt == '7') %}checked{% endif %} />
+                    <label for="rt-7">7일</label>
+                </div>
+                <div class="radiobtn" hx-get="{{ url_for('adsreport') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{"start_date": "14","end_date": "{{ end_date }}"}'>
+                    <input type="radio" id="rt-14" {% if(start_date_cnt== '14') %}checked{% endif %} />
+                    <label for="rt-14">14일</label>
+                </div>
+                <div class="radiobtn" hx-get="{{ url_for('adsreport') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{"start_date": "30","end_date": "{{ end_date }}"}'>
+                    <input type="radio" id="rt-30" {% if(start_date_cnt == '30') %}checked{% endif %} />
+                    <label for="rt-30">30일</label>
+                </div>
+                <div class="radiobtn" hx-get="{{ url_for('adsreport') }}" hx-trigger="click" hx-target="body" hx-swap="innerHTML" 
+                    hx-vals='{"start_date": "60","end_date": "{{ end_date }}"}'>
+                    <input type="radio" id="rt-60" {% if(start_date_cnt == '60') %}checked{% endif %} />
+                    <label for="rt-60">60일</label>
+                </div>
+                <div class="radiobtn" data-toggle="modal" data-target="#modal-form-signup">
+                    <input type="radio" id="rt-selcetdate"  name="start_date" value='rt-selcetdate' {% if(start_date_cnt == '') %}checked{% endif %}  />
+                    <label for="rt-selcetdate">날짜 선택</label>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- 리포트 섹션 -->
+    <!-- 캠페인 요약 및 누적 실적 / 광고 그룹 리스트 -->
+    <div id="pannel_2" class="section_title" onclick="show_set_pannel(this.id)">광고비 관련 리포트<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_2c" class="section_content">
+        <div class="row">
+            <div class="col-3 ">
+                <div class="itemtitle">광고비
+                </div>
+                <div class="itemcontent">{{ summary['adscost'] }} <span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">일평균 광고비
+                </div>
+                <div class="itemcontent">{{ summary['adscostperday'] }}<span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3 ">
+                <div class="itemtitle">광고전환 매출
+                </div>
+                <div class="itemcontent">{{ summary['adsorderamount'] }} <span class="unit">원</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">광고전환 판매수량
+                </div>
+                <div class="itemcontent">{{ summary['adsorderq'] }}<span class="unit">개</span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-3 ">
+                <div class="itemtitle">총 매출 대비 광고매출 비중
+                </div>
+                <div class="itemcontent">{{ summary['adsorderamountrate'] }} <span class="unit">%</span>
+                </div>
+            </div>
+            <div class="col-3 ">
+                <div class="itemtitle">광고기여마진(근접값)
+                </div>
+                <div class="itemcontent">{{ summary['ads_margin'] }} <span class="unit">원</span>
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-3">
+                <div class="itemtitle">광고효율
+                </div>
+                <div class="itemcontent">{{ summary['roas'] }}<span class="unit">%</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">제로마진 기준효율
+                </div>
+                <div class="itemcontent">{{ summary['roas_zeromargin'] }}<span class="unit">%</span>
+                </div>
+            </div>
+            <div class="col-3 ">
+                <div class="itemtitle">전환율
+                </div>
+                <div class="itemcontent">{{ summary['cvr'] }} <span class="unit">%</span>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="itemtitle">전환단가
+                </div>
+                <div class="itemcontent">{{ summary['cps'] }}<span class="unit">원</span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="itemtitle" style="margin-top:20px;">광고비, 광고매출<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+                <div class="itemcontent" style="width:100%; padding-top:10px;">
+                    <canvas id="chart_adsreport_dailycost" style="width:100%; height:300px;" ></canvas>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="itemtitle" style="margin-top:20px;">ROAS,제로마진 기준효율
+                </div>
+                <div class="itemcontent" style="width:100%; padding-top:10px;">
+                    <canvas id="chart_adsreport_roas" style="width:100%; height:200px;" ></canvas>
+                </div>
+            </div>   
+        </div>
+    </div>
+
+    <!-- 캠페인 요약 및 누적 실적 / 광고 그룹 리스트 -->
+    <div id="pannel_1" class="section_title" onclick="show_set_pannel(this.id)">캠페인 리스트<div class="right_text">{{ start_date }} ~ {{ end_date}}</div></div>
+    <div id="pannel_1c" class="section_content">
+        <div class="report_about">
+            <ul>
+                <li>캠페인/그룹 코드를 클릭하면 해당 광고 보고서로 이동합니다. </li>
+                <li>각 종 캠페인 정보 수정후 반드시 [광고 작업리스트]에서 반영버튼을 클릭하세요.</li>
+                <li>별도로 저장하지 않아도 수정된 항목은 [광고 작업리스트]에 자동업데이트 됩니다.</li>
+            </ul>
+        </div>
+        <table id="table_campaign_list" class="display nowrap gridjs-wrapper" width="100%"></table>
+    </div>
+
+</div>
+<!--리포트 날짜선택 모달 창-->
+<div class="modal fade" id="modal-form-signup" tabindex="-1" role="dialog" aria-labelledby="modal-form-signup" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <div class="card bg-primary shadow-soft border-light p-4">
+                    <button type="button" id="modal_close" class="close ml-auto" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <div class="card-header text-center pb-0">
+                        <h2 class="mb-0 h5">보고서 기간 설정</h2>
+                        <div id="api_result"></div>  
+                    </div>
+                    <div class="card-body">
+                        <label>보고서 기간을 설정해 주세요.</label>
+                        <form hx-post="{{ url_for('adsreport') }}"  hx-target="body" hx-swap="innerHTML" >
+                            <div class="input-daterange datepicker row align-items-center">
+                                <div class="col-12">
+                                    <label class="h6">보고서 시작일</label>
+                                    <div class="form-group">
+                                        <div class="input-group input-group-border">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                            </div>
+                                            <input id="start_date" class="form-control datepicker" name="start_date" placeholder="Start date"  type="text" value='{{ start_date }}'>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="h6">보고서 종료일</label>
+                                        <div class="input-group input-group-border">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><span class="far fa-calendar-alt"></span></span>
+                                            </div>
+                                            <input id="end_date" class="form-control datepicker" name="end_date" placeholder="End date"  type="text" value='{{ end_date }}'>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-block btn-primary"  onClick="myFunction()">보고서 생성하기</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
+<!-- 기본변수 -->
+<script>
+    start_date = '{{ start_date }}'
+    end_date = '{{ end_date }}'
+</script>
+<!-- 데이트피커, 모달 클로즈 -->
+    <script>
+        function myFunction() { document.getElementById("modal_close").click(); };
+        $( function() { $( ".datepicker" ).datepicker(); } );
+    </script>
+
+    <!-- 기본 변수 -->
+    <script>
+        var start_date = '{{ start_date }}';
+        var end_date = '{{ end_date }}';
+    </script>
+
+<!-- DIV 오픈/닫기 -->
+    <script>
+        function show_set_pannel(id){
+            const element = document.getElementById(id + 'c');
+            if(element.style.display == 'none'){ element.style.display = ""; }else{ element.style.display = "none"; } };
+    </script>
+
+<!-- TABLE - 캠페인 리스트 -->
+    <script>
+        var table_campaign_list = $('#table_campaign_list').DataTable({
+            ajax: {
+                method : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_campaign_list',
+                data: function ( d ) {
+                    return JSON.stringify( {  start_date : start_date, end_date : end_date } ); },
+                dataSrc: function(res) {
+                    var data = res.data;
+                    return data;
+                    },
+                },
+            columns: [
+                { className: 'details-control', orderable: false, data: null, defaultContent: '' },
+                { data: "account", title : '계정', name : 'account' },
+                { data: "campaigncode", title : '캠페인코드', name : 'campaigncode',
+                    render : function(data){return '<a href="/campaign_page?campaigncode=' + data + '">' + data + '</a>'}
+                },
+                { data: "campaignname", title : '캠페인이름', name : 'campaignname' ,
+                    render : function(data, raw, type){
+                        var htmlcode = '<input type="text" class="camp_table_input_name" name="'+type['campaigncode']  +'" value = "' + data + '" id="changecampaignname_' +  type['campaigncode'] + '" onchange="ajax_campaign_name(this.id)" >'
+                        return htmlcode
+                    }
+                },
+                { data: "isactive", title : '운영상태', name : 'isactive', 
+                    render : function (data, row, type, meta){
+                        if (data == 1){
+                            return '<label><input role="switch" class="switch" type="checkbox" id="' +  type['campaigncode'] + '" onchange="ajax_campaign_switch(this.id)" checked disabled/></label>'
+                        }else{
+                             return '<label><input role="switch" class="switch" type="checkbox" id="' +  type['campaigncode'] + '" onchange="ajax_campaign_switch(this.id)" disabled/></label>'
+                        };
+                    }
+                },
+                { data: "bidtype", title : '운영방식', name : 'bidtype' },
+                { data: "adsorderamount", title : '광고전환매출', name : 'adsorderamount' },
+                { data: "roas", title : 'ROAS', name : 'roas' },
+                { data: "budget", title : '예산', name : 'budget' ,
+                    render : function(data, raw, type){
+                        var htmlcode = '<input type="number" class="camp_table_input" name = "' + type['campaigncode'] + '" value = "' + data + '" id="changebudget_' +  type['campaigncode'] + '" onchange="ajax_campaign_budget(this.id)" min="10000">'
+                        return htmlcode
+                    }
+                }, 
+                { data: "adscost", title : '집행광고비(일)', name : 'adscost' },
+                { data: "isactive"},
+            ],
+            columnDefs: [
+                {
+                    targets: [6,7,8,9],
+                    render : $.fn.DataTable.render.number( ',' )
+                },
+                {
+                    targets: [6,7,8,9],
+                    className: "dt-right",
+                },
+                {
+                    targets: [0, 1, 2, 3, 4,5],
+                    className: "dt-center outer_table_td",
+                },
+                { visible: false, targets: 10 },
+
+            ],
+            fixedColumns: {start: 1 },
+            order: [ [10, 'desc'] ,[9, 'desc'] ],
+            searching : true,
+            processing: true,
+            paging : false,
+            scrollX : true, scrollY : '600px',
+            colReorder: true,
+        });
+    </script>
+
+<!-- 광고 그룹 테이블 -->
+    <script>
+
+        // 옵션 리스트 생성기
+        function format(rowData) {
+            var table_grouplist = '<table id="cl' + rowData.campaigncode + '" class="display compact nowrap w-100 customtable" width="100%">광고그룹 리스트(캠페인에 동일한 광고그룹명이 있을 경우 리포트가 부정확하게 제공됩니다.) </table><br>';
+            return $(table_grouplist).toArray();
+        }
+
+
+        // 그룹 리스트 
+        $('#table_campaign_list tbody').on('click', 'td.details-control', function () {
+            var tr = $(this).closest('tr');
+            var row = table_campaign_list.row(tr);
+            var rowData = row.data();
+
+            if (row.child.isShown()) {
+                console.log(rowData.campaigncode)
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+
+                // Destroy the Child Datatable
+                $('#cl' + rowData.campaigncode).DataTable().destroy();
+            }
+            else {
+                // Open this row
+                row.child(format(rowData)).show();
+                console.log(rowData.campaigncode)
+                var id = rowData.campaigncode;
+                var table_grouplist = $('#cl' + id).DataTable({
+            ajax: {
+                type : "POST",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_grouplist',
+                data: function ( d ) {
+                return JSON.stringify({ 'campaigncode': id , start_date : start_date, end_date : end_date});
+                },
+                dataSrc: function(res) {
+                var data = res.data;
+                return data;
+                },
+                },
+
+                columns: [
+                    { title: '그룹코드', name : 'optcode', data: "groupcode",
+                        render : function(data){return '<a href="/group_page?groupcode=' + data + '">' + data + '</a>'}
+                    },
+                    { title: '그룹명', name : 'optname',  data: "groupname",
+                        render : function(data, raw, type){
+                            var htmlcode = '<input type="text" class="camp_table_input_name" name="'+ type['groupcode'] + '" value = "' + data + '" id="changegroupname_' +  type['groupcode'] + '" onchange="ajax_group_name(this.id)" >'
+                            return htmlcode}
+                    },
+
+                    { data: "isactive", title : 'On/Off', name : 'isactive', 
+                        render : function (data, row, type, meta){
+                            if (data == 1){
+                                return '<label><input role="switch" class="switch" type="checkbox" name = "groupcode" id="' +  type['groupcode'] + '" onchange="ajax_group_switch(this.id)" checked disabled/></label>'
+                            }else{
+                                return '<label><input role="switch" class="switch" type="checkbox" name = "groupcode" id="' +  type['groupcode'] + '" onchange="ajax_group_switch(this.id)" disabled/></label>'
+                            };
+                        }
+                    },
+                    { title: '운영방식', name : 'deltype', data: "bidtype" },
+                    { title: '광고전환매출', name : 'price', data: "adsorderamount" },
+                    { data: "roastarget", title : '목표ROAS', name : 'roastarget',
+                        render : function(data, raw, type){
+                            if (type['bidtype'] == '수동'){
+                                return '수동'
+                            }else if (type['bidtype'] == '매출스타트'){
+                                return '변경불가'
+                            }else{
+                                var htmlcode = '<input type="number" class="camp_table_input"  name = "'+type['groupcode'] +'" value = "' + data + '" id="grouproas_' +  type['groupcode'] + '" onchange="ajax_group_roas(this.id)" >'
+                                return htmlcode}
+                        }
+                    },
+                    { title: 'ROAS', name : 'price', data: "roas" },
+                    { title: '집행광고비(일)', name : 'price', data: "adscost" },
+                    { title: '스마트타게팅', name : 'price', data: "smarttargeting", 
+                        render : function (data, row, type, meta){
+                            if (type['bidtype'] == '수동'){
+                                if (data == 'on'){
+                                    return '<label><input role="switch" class="switch" type="checkbox" name = "'+type['groupcode'] +'" id="smarttargeting_' +  type['groupcode'] + '" onchange="ajax_smarttargeting_switch(this.id)" checked/></label>'
+                                }else{
+                                    return '<label><input role="switch" class="switch" type="checkbox" name = "'+type['groupcode'] +'" id="smarttargeting_' +  type['groupcode'] + '" onchange="ajax_smarttargeting_switch(this.id)" /></label>'
+                                };}else{ return '-'}
+                        }
+                    },
+                    { title: '스마트타게팅입찰가', name : 'price', data: "smarttargetingpricing" , 
+                        render : function (data, row, type, meta){ 
+                            if (type['bidtype'] == '수동'){
+                                if (data == 0){
+                                    var htmlcode = '<input type="number" class="camp_table_input" name = "'+type['groupcode'] +'" value = "100"  id="smarttargetingpricing_' +  type['groupcode'] + '" onchange="ajax_smarttargeting_pricing(this.id)" disabled >'
+                                }else{
+                                    var htmlcode = '<input type="number" class="camp_table_input" name = "'+type['groupcode'] +'" value = "' + data + '" id="smarttargetingpricing_' +  type['groupcode'] + '" onchange="ajax_smarttargeting_pricing(this.id)" >'}
+                                return htmlcode
+                            }else{ return '-'}
+                        },
+                    },
+                    { data: "nonkeywordpricing", title : '비검색영역 입찰가', name : 'nonkeywordpricing',
+                        render : function(data, raw, type){
+                            if (type['bidtype'] == '수동'){
+                                var htmlcode = '<input type="number" class="camp_table_input" name = "'+type['groupcode'] +'" value = "' + data + '" id="nonkeywordpricing_' +  type['groupcode'] + '" onchange="ajax_nonkeywordpricing(this.id)" >'
+                                return htmlcode
+                            }else{
+                                return ''}
+                        }
+                    },
+                ],
+                columnDefs: [
+                    {
+                        targets: [4,5,6,7,9 ],
+                        render : $.fn.DataTable.render.number( ',' )
+                    },
+                    {
+                        targets: [0,1,2,3,5,8],
+                        className: "dt-center",
+                    },
+                    { 
+                    targets: [0,1,2,3,4,5,6,7,8 ],
+                    className: "inner_table_td"
+                    },
+                ],
+                fixedColumns: {start: 1 },
+                paging:false,
+                dom: "t",
+                    });
+                    tr.addClass('shown');
+            }
+        });
+
+
+
+    </script>
+
+<!-- CHART - 데일리 광고비 차트-->
+    <script>
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_adsreport_dailycost",
+            type: "POST",
+            data: JSON.stringify({ start_date: start_date, end_date : end_date }),
+            success: function(response){
+                var  chart_adsreport_dailycost = Chart.getChart('chart_adsreport_dailycost');
+
+                if (chart_adsreport_dailycost !== undefined) {
+                    chart_adsreport_dailycost.destroy();
+                };
+
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['data']['labels'];
+                
+                var chart_adsreport_dailycost = new Chart( document.getElementById('chart_adsreport_dailycost'), {
+                    type: 'bar', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+                            { label: '광고비', data: _data['adscost'], yAxisID : 'y1' },
+                            { label: '광고매출', data: _data['adsorderamount'], yAxisID : 'y1' },
+                        ],
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index', },
+                        scales: {
+                            y1 : { position : 'left', display : true },
+                            y2 : { position : 'right', display : true, grid : { drawOnChartArea: false } },
+                        },
+                        plugins: { 
+                            title: { display: false },
+                            legend: { position:'bottom', labels: { usePointStyle :true }, display:true, },
+                        }
+                    }
+                });
+                chart_adsreport_dailycost.resize();
+            },
+        });
+
+    </script>
+<!-- CHART - 데일리 ROAS -->
+    <script>
+        $.ajax({
+            dataType: "text",
+            contentType: "application/json",
+            url: "/api_chart_adsreport_roas",
+            type: "POST",
+            data: JSON.stringify({ start_date: start_date, end_date : end_date }),
+            success: function(response){
+                var  chart_adsreport_roas = Chart.getChart('chart_adsreport_roas');
+
+                if (chart_adsreport_roas !== undefined) {
+                    chart_adsreport_roas.destroy();
+                };
+
+                var _data;
+                var _labels;
+                full_data = JSON.parse(response);
+                _data = full_data['data'];
+                _labels = full_data['data']['labels'];
+                
+                var chart_adsreport_roas = new Chart( document.getElementById('chart_adsreport_roas'), {
+                    type: 'bar', 
+                    data: {
+                        labels: _labels,
+                        datasets: [
+                            { label: '제로마진 기준 ROAS', data: _data['roas_zeromargin'], type : 'line' },
+                            { label: 'ROAS', data: _data['roas']  },
+                        ],
+                    },
+                    
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index', },
+                        plugins: { 
+                            title: { display: false },
+                            legend: { position:'bottom', labels: { usePointStyle :true }, display:true, },
+                        }
+                    }
+                });
+                chart_adsreport_roas.resize();
+            },
+        });
+
+    </script>
+<!--캠페인 상태 변경 -->
+    <script>
+        // 캠페인 온오프
+            function ajax_campaign_switch(id){
+                const element = document.getElementById(id);
+                var isChecked=element.checked;
+                if (isChecked == true){
+                    onoff = 'on'
+                }else{
+                    onoff = 'off'
+                }
+                var campaigncode = id;
+                $.ajax({
+                    url: '/api_campaign_onoff',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'campaigncode' : campaigncode ,'onoff' : onoff },
+                })
+            };
+        // 캠페인 이름변경
+            function ajax_campaign_name(id){
+                const element = document.getElementById(id);
+                var campaignname = element.value
+                var campaigncode = element.name;
+                $.ajax({
+                    url: '/api_campaign_name',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'campaigncode' : campaigncode , 'campaignname' : campaignname },
+                })
+            };
+
+        // 캠페인 예산 변경
+            function ajax_campaign_budget(id){
+                const element = document.getElementById(id);
+                budget = element.value
+                campaigncode = element.name
+                if (budget < 10000){ 
+                    element.value = 10000;
+                    budget=10000
+                }
+                $.ajax({
+                    url: '/api_campaign_budget',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'campaigncode' : campaigncode , 'budget' : budget },
+                })
+            };
+
+        // 그룹이름변경
+            function ajax_group_name(id){
+                const element = document.getElementById(id);
+                groupname = element.value
+                var groupcode = element.name;
+                $.ajax({
+                    url: '/api_group_name',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'groupname' : groupname },
+                })
+            };
+
+        // 그룹 온오프
+            function ajax_group_switch(id){
+                const element = document.getElementById(id);
+                var isChecked=element.checked;
+                if (isChecked == true){
+                    onoff = 'on'
+                }else{
+                    onoff = 'off'
+                }
+                var groupcode = id;
+                $.ajax({
+                    url: '/api_group_onoff',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'onoff' : onoff },
+                })
+            };
+
+        // 그룹 ROAS 변경
+            function ajax_group_roas(id){
+                const element = document.getElementById(id);
+                var roas = element.value
+                var groupcode = element.name;
+                $.ajax({
+                    url: '/api_group_roas',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'roas' : roas },
+                })
+            };
+        // 그룹 스마트타게팅 온오프
+            function ajax_smarttargeting_switch(id){
+                const element = document.getElementById(id);
+                var groupcode = element.name
+                var input_ele = document.getElementById('smarttargetingpricing_' + groupcode)
+                var isChecked=element.checked;
+                if (isChecked == true){
+                    onoff = 'on'
+                    input_ele.disabled = false
+                }else{
+                    onoff = 'off'
+                    input_ele.disabled = true}
+                $.ajax({
+                    url: '/api_smarttargeting_onoff',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'onoff' : onoff },
+                })
+            };
+        
+        // 그룹 스마트타게팅 입찰가 변경
+            function ajax_smarttargeting_pricing(id){
+                const element = document.getElementById(id);
+                var groupcode = element.name
+                var pricing = element.value
+                $.ajax({
+                    url: '/api_smarttargeting_pricing',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'pricing' : pricing },
+                })
+            };
+        // 그룹 비검색영역 입찰가 변경
+            ajax_nonkeywordpricing
+            function ajax_nonkeywordpricing(id){
+                const element = document.getElementById(id);
+                var groupcode = element.name
+                var pricing = element.value
+                $.ajax({
+                    url: '/api_nonkeyword_pricing',
+                    method: 'POST',
+                    dataType : 'application/json',
+                    data: {'groupcode' : groupcode , 'pricing' : pricing },
+                })
+            };
+    </script>
+
+
+{% endblock %}

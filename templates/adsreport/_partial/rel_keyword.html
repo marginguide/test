@@ -1,0 +1,83 @@
+<div class="input_zone">
+    <input type="text" name="keyword">
+    <button type="submit" class="macro_on">
+        <span>연관검색어 가져오기</span>
+    </button>
+</div>
+<table class="stripe nowrap dataTable " width="100%">
+    <thead>
+        <tr role="row">
+            <th class="dt-center" rowspan="1" colspan="1" tabindex="0" >
+                <span class="dt-column-title" role="button">키워드</span>
+            </th>
+            <th class="dt-center" rowspan="1" colspan="1" tabindex="0">
+                <span class="dt-column-title" >키워드 등록하기</span>
+            </th>
+            <th class="dt-center" rowspan="1" colspan="1" tabindex="0">
+                <span class="dt-column-title" >CPC</span>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for keyword in rel_keywords%}
+        <tr>
+            <td class="outer_table_td dt-center">
+                <input class= " " value ="{{ keyword[0] }}" name="rel_keyword_{{ loop.index }}" readonly>
+            </td>
+            <td class="dt-center">
+                {% if keyword[2] == 0 %}
+                <input class= " switch" role="switch" type="checkbox" name = "{{ keyword[0] }}" id="rel_search_keyword_{{ keyword[0] }}" onchange="add_searchlist_rel(this.id)" >
+                {% else %}
+                <input class= " switch" role="switch" type="checkbox" name = "{{ keyword[0] }}" id="rel_search_keyword_{{ keyword[0] }}" onchange="add_searchlist_rel(this.id)" checked/ >
+                {% endif %}
+            </td>
+            <td class="dt-center">
+                <input class= "cpc_input" value={{ keyword[1] }} id= "rel_cpc_{{ keyword[0] }}" name= "{{ keyword[0] }}" onchange="groupreport_resultkeyword_change_cpc_rel(this.id)" >
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+<script>
+// 검색키워드 추가
+function add_searchlist_rel(id){
+    const element = document.getElementById(id);
+    var isChecked=element.checked;
+    var keyword = element.name;
+    var cpc = document.getElementById('rel_cpc_' + keyword)
+    var cpc_price = cpc.value
+
+    if (isChecked == true){ 
+        onoff = 'on';
+    }else{ 
+        onoff = 'off';
+    }
+    $.ajax({
+        url: '/api_search_keyword',
+        method: 'POST',
+        data: { 'campaigncode' : campaigncode, 'groupcode' : groupcode, 'keyword' : keyword , 'onoff' : onoff, 'cpc':cpc_price },
+        dataType : 'text',
+    })
+};
+
+
+
+// CPC 개별 변경
+function groupreport_resultkeyword_change_cpc_rel(id){
+    const element = document.getElementById(id);
+    var keyword = element.name;
+    var pricing = element.value;
+    if (pricing < 100){
+        element.value = 100
+        pricing = 100
+    }
+    $.ajax({
+        url: "/api_groupreport_resultkeyword_change_cpc",
+        type: "POST",
+        data: { 'groupcode' : groupcode, 'keyword' : keyword, 'cpc' : pricing, 'campaigncode':campaigncode }
+    })
+        }   
+    </script>

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page">
+    <div class="page_title">윙 계정 관리하기</div><br>
+    <div class="page-about">
+        <ul>
+            <li>최대 5개의 윙 계정을 추가할 수 있습니다.</li>
+            <li>윙계정의 비밀번호가 변경되었을 경우, 반드시 변경된 비밀번호를 수정입력해 주세요.</li>
+
+        </ul>
+    </div>
+
+    <fieldset class="groupbox-border">
+        <legend class="groupbox-border">윙 계정 추가하기</legend>
+        <form>
+            <div class='row'>
+                <div class='col-3'>
+                <div class="itemtitle">아이디</div>
+                <div class="itemvalue">
+                    <input type='text' value="" name="account" class="input_id">
+                </div>
+                </div>
+                <div class='col-3'>
+                <div class="itemtitle">비밀번호</div>
+                <div class="itemvalue">
+                    <input type='password' value="" name="password" class="input_pass">
+                </div>
+                </div>
+                <div class='col-6'>
+                    <input type="submit" hx-post="add_account_loading" value="+ 새로운 윙 계정 추가하기" hx-swap="innerHTML" hx-target="body" class="macro_on">
+                </div>
+            </div>
+        </form>
+    </fieldset>
+
+    {% for account in accounts %}
+    <fieldset class="groupbox-border">
+        <legend class="groupbox-border">{{ account['sid'] }}</legend>
+        <form>
+            <div class='row'>
+                <div class='col-3'>
+                <div class="itemtitle">아이디</div>
+                <div class="itemvalue">
+                    <input type='text' value="{{ account['sid'] }}" name="account" class="input_id" disabled >
+                </div>
+                </div>
+                <div class='col-3'>
+                <div class="itemtitle">비밀번호</div>
+                <div class="itemvalue">
+                    <input type='password' value="{{ account['password'] }}" name="password" class="input_pass" >
+                </div>
+                </div>
+                <div class='col-2'>
+                    <input type="submit" button hx-post="edit_password_loading" value="비밀번호 변경적용하기" hx-swap="innerHTML" hx-target="body" class="fix_pass_btn" hx-vals='{ "account" : "{{ account["sid"] }}" }'></button>
+                </div>
+                <div class='col-2'>
+                    <input type="submit" button hx-post="del_account" value="계정 삭제하기" hx-swap="innerHTML" hx-target="body" class="del_id_btn" hx-vals='{ "account" : "{{ account["sid"] }}" }'hx-confirm="계정을 마진가이드에서 삭제하시겠습니까?"></button>
+                </div>
+            </div>
+        </form>
+    </fieldset>
+    {% endfor %}
+    
+
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,735 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page">
+    <!-- 어제자 품절 정보 및 상품 주요 실적 -->
+    <div class="dashboard_card_header">
+        <div class="">10일 이내 품절 예상 제품(최근7일 데이터 기준)</div>
+    </div>
+    <div class="dashboard_card_body" >
+        <div class="col-12">
+            <table id="table_dashboard_soldout" class="stripe nowrap" width="100%" ></table>
+        </div>
+    </div>
+    <div class="dashboard_card_header">
+        <div class="">어제자 주요실적 ({{ summary['latest_date']}} 기준)</div>
+    </div>
+    <div class="dashboard_card_body" >
+        <div class="row">
+
+            {% if summary['is_yesterday'] == 0 %}
+            <div class="dashbord-mini-pannel col-12">
+                    어제자 데이터가 아직 수집되지 않았습니다. 수집버튼을 눌러 데이터를 수집해주세요.
+                    <button  class="btn btn-pill btn-primary" type="button"  hx-get="{{ url_for('dailyscrawl_loading') }}" hx-swap="innerHTML" hx-target="body"><span class="mr-1"><span class="fab fa-chrome"></span></span>데이터 수집(Daily)</button>
+            </div>
+            {% else %}
+            <div class="col-3">
+                <div class="dashbord-mini-pannel">
+                    <div class="dashboard_mini_header">
+                        매출
+                    </div>
+                    <div class="dashboard_mini_content">
+                        {{ summary['yesterday_orderamount'] }}<span class='unit'>원</span>
+                        <div>
+                            <span class='unit'>일주일 평균 : </span><span style="font-size:15px;font-weight:500">{{ summary['seven_orderamount'] }}</span><span class='unit'>원</span>
+                        </div>
+                        <span class='unit'>일주일 평균대비</span>
+                        {% if summary['pm_orderamount'] > 0 %}
+                        <span style="color:red;font-size:15px;font-weight:500">   ▲ {{ summary['delta_orderamount'] }}</span><span class='unit'>원</span>
+                        {% elif  summary['pm_orderamount'] == 0 %}
+                        <span style="font-size:15px;font-weight:500">   - {{ summary['delta_orderamount'] }}</span><span class='unit'>원</span>
+                        {% else %}
+                        <span style="color:blue;font-size:15px;font-weight:500">   ▼ {{ summary['delta_orderamount'] }}</span><span class='unit'>원</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="dashbord-mini-pannel">
+                    <div class="dashboard_mini_header">
+                        마진
+                    </div>
+                    <div class="dashboard_mini_content">
+                        {{ summary['yesterday_margin'] }}<span class='unit'>원</span>
+                        <div>
+                            <span class='unit'>일주일 평균 : </span><span style="font-size:15px;font-weight:500">{{ summary['seven_margin'] }}</span><span class='unit'>원</span>
+                        </div>
+                        <span class='unit'>일주일 평균대비</span>
+                        {% if summary['pm_margin'] > 0 %}
+                        <span style="color:red;font-size:15px;font-weight:500">   ▲ {{ summary['delta_margin'] }}</span><span class='unit'>원</span>
+                        {% elif  summary['pm_margin'] == 0 %}
+                        <span style="font-size:15px;font-weight:500">   - {{ summary['delta_margin'] }}</span><span class='unit'>원</span>
+                        {% else %}
+                        <span style="color:blue;font-size:15px;font-weight:500">   ▼ {{ summary['delta_margin'] }}</span><span class='unit'>원</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="dashbord-mini-pannel">
+                    <div class="dashboard_mini_header">
+                        광고비
+                    </div>
+                    <div class="dashboard_mini_content">
+                        {{ summary['yesterday_adscost'] }}<span class='unit'>원</span>
+                        <div>
+                            <span class='unit'>일주일 평균 : </span><span style="font-size:15px;font-weight:500">{{ summary['seven_adscost'] }}</span><span class='unit'>원</span>
+                        </div>
+                        <span class='unit'>일주일 평균대비</span>
+                        {% if summary['pm_adscost'] > 0 %}
+                        <span style="color:red;font-size:15px;font-weight:500">   ▲ {{ summary['delta_adscost'] }}</span><span class='unit'>원</span>
+                        {% elif  summary['pm_adscost'] == 0 %}
+                        <span style="font-size:15px;font-weight:500">   - {{ summary['delta_adscost'] }}</span><span class='unit'>원</span>
+                        {% else %}
+                        <span style="color:blue;font-size:15px;font-weight:500">   ▼ {{ summary['delta_adscost'] }}</span><span class='unit'>원</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="dashbord-mini-pannel">
+                    <div class="dashboard_mini_header">
+                        광고 ROAS
+                    </div>
+                    <div class="dashboard_mini_content">
+                        {{ summary['yesterday_roas'] }}<span class='unit'>%</span>
+                        <div>
+                            <span class='unit'>일주일 평균 : </span><span style="font-size:15px;font-weight:500">{{ summary['seven_roas'] }}</span><span class='unit'>%</span>
+                        </div>
+                        <span class='unit'>일주일 평균대비</span>
+                        {% if summary['pm_roas'] > 0 %}
+                        <span style="color:red;font-size:15px;font-weight:500">   ▲ {{ summary['delta_roas'] }}</span><span class='unit'>%</span>
+                        {% elif  summary['pm_roas'] == 0 %}
+                        <span style="font-size:15px;font-weight:500">   - {{ summary['delta_roas'] }}</span><span class='unit'>%</span>
+                        {% else %}
+                        <span style="color:blue;font-size:15px;font-weight:500">   ▼ {{ summary['delta_roas'] }}</span><span class='unit'>%</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-12">
+            <div class="dashboard_mini_header">
+                제품별 주요실적<span class='unit'>({{ summary['latest_date']}} 기준)</span>
+            </div>
+            <table id="table_dashboard_prdreport" class="stripe nowrap" width="100%" ></table>
+        </div>
+    </div>
+    
+    
+    <!-- 월 주요실적 -->
+    <div class="dashboard_card_header">
+        <div class="">{{ summary['year'] }}년 {{summary['month']}}월 주요 실적</div>
+    </div>
+    <div class="dashboard_card_body" >
+        <div class="row">
+            <div class="row col-5">
+                <div class="col-4">
+                    <div class="dashboard_element_header">
+                        매출액<span class='unit'>(단위 : 천원)</span>
+                    </div>
+                    <div class="dashboar_element_content">
+                        {{ summary['month_orderamount']}}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="dashboard_element_header">
+                        마진<span class='unit'>(단위 : 천원)</span>
+                    </div>
+                    <div class="dashboar_element_content">
+                        {{ summary['month_margin']}}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="dashboard_element_header">
+                        ROAS<span class='unit'>(단위 : %)</span>
+                    </div>
+                    <div class="dashboar_element_content">
+                        {{ summary['month_roas']}}
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <br>
+                    <div class="dashboard_element_header">매출액</div>
+                    <canvas id="chart_dashboard_daily_sales" style="width:100%; height:100px;" ></canvas>
+                </div>
+                <div class="col-12">
+                    <br>
+                    <div class="dashboard_element_header">마진액</div>
+                    <canvas id="chart_dashboard_daily_margin" style="width:100%; height:100px;" ></canvas>
+                </div>
+                <div class="col-12">
+                    <br>
+                    <div class="dashboard_element_header">광고 ROAS</div>
+                    <canvas id="chart_dashboard_daily_roas" style="width:100%; height:100px;" ></canvas>
+                </div>
+            </div>
+            <div class="col-7">
+                <!-- Year 매출 탑5 -->
+                <div class="dashboard_element_header">
+                    매출 TOP 5<span class='unit'>(단위 : 천원)</span>
+                </div>
+                <div class="rank_div">
+                    <div class="row">
+                        {% for rankdata in month_sales %}
+                        <a href="/api_product_report?prdcode={{ rankdata[1] }}">
+                            <div class="ranked_prd">
+                                <div class="rank_thum_div">
+                                    <img class="rank_thumb" src="{{ rankdata[2] }}">
+                                    <div class="rank_label red_label">{{ rankdata[0] }}</div>
+                                </div>
+                                <div class="rank_result">{{ rankdata[3] }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Year 마진 탑5 -->
+                <div class="dashboard_element_header">
+                    마진 TOP 5<span class='unit'>(단위 : 천원)</span>
+                </div>
+                <div class="rank_div">
+                    <div class="row">
+                        {% for rankdata in month_margin %}
+                        <a href="/api_product_report?prdcode={{ rankdata[1] }}">
+                            <div class="ranked_prd">
+                                <div class="rank_thum_div">
+                                    <img class="rank_thumb" src="{{ rankdata[2] }}">
+                                    <div class="rank_label pupple_label">{{ rankdata[0] }}</div>
+                                </div>
+                                <div class="rank_result">{{ rankdata[3] }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Year 마진 워스트 5 -->
+                <div class="dashboard_element_header">
+                    마진 WORST 5<span class='unit'>(역마진 상품, 단위 : 천원)</span>
+                </div>
+                <div class="rank_div">
+                    <div class="row">
+                        {% for rankdata in month_margin_reverse %}
+                        <a href="/api_product_report?prdcode={{ rankdata[1] }}">
+                            <div class="ranked_prd">
+                                <div class="rank_thum_div">
+                                    <img class="rank_thumb" src="{{ rankdata[2] }}">
+                                    <div class="rank_label pupple_label">{{ rankdata[0] }}</div>
+                                </div>
+                                <div class="rank_result">{{ rankdata[3] }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Year ROAS BEST 5 -->
+                <div class="dashboard_element_header">
+                    광고  ROAS TOP 5<span class='unit'>(단위 : %)</span>
+                </div>
+                <div class="rank_div">
+                    <div class="row">
+                        {% for rankdata in month_roas %}
+                        <a href="/api_product_report?prdcode={{ rankdata[1] }}">
+                            <div class="ranked_prd">
+                                <div class="rank_thum_div">
+                                    <img class="rank_thumb" src="{{ rankdata[2] }}">
+                                    <div class="rank_label green_label">{{ rankdata[0] }}</div>
+                                </div>
+                                <div class="rank_result">{{ rankdata[3] }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 연도 주요 실적 -->
+    <div class="dashboard_card_header">
+        <div class="">{{ summary['year'] }}년 주요 실적</div>
+    </div>
+    <div class="dashboard_card_body" >
+        <div class="row">
+            <div class="row col-5">
+                <div class="col-4">
+                    <div class="dashboard_element_header">
+                        매출액<span class='unit'>(단위 : 천원)</span>
+                    </div>
+                    <div class="dashboar_element_content">
+                        {{ summary['year_orderamount']}}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="dashboard_element_header">
+                        마진<span class='unit'>(단위 : 천원)</span>
+                    </div>
+                    <div class="dashboar_element_content">
+                        {{ summary['year_margin']}}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="dashboard_element_header">
+                        ROAS<span class='unit'>(단위 : %)</span>
+                    </div>
+                    <div class="dashboar_element_content">
+                        {{ summary['year_roas']}}
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <br>
+                    <div class="dashboard_element_header">매출액</div>
+                    <canvas id="chart_dashboard_monthly_sales" style="width:100%; height:100px;" ></canvas>
+                </div>
+                <div class="col-12">
+                    <br>
+                    <div class="dashboard_element_header">마진액</div>
+                    <canvas id="chart_dashboard_monthly_margin" style="width:100%; height:100px;" ></canvas>
+                </div>
+                <div class="col-12">
+                    <br>
+                    <div class="dashboard_element_header">광고 ROAS</div>
+                    <canvas id="chart_dashboard_monthly_roas" style="width:100%; height:100px;" ></canvas>
+                </div>
+            </div>
+            <div class="col-7">
+                <!-- Year 매출 탑5 -->
+                <div class="dashboard_element_header">
+                    매출 TOP 5<span class='unit'>(단위 : 천원)</span>
+                </div>
+                <div class="rank_div">
+                    <div class="row">
+                        {% for rankdata in year_sales %}
+                        <a href="/api_product_report?prdcode={{ rankdata[1] }}">
+                            <div class="ranked_prd">
+                                <div class="rank_thum_div">
+                                    <img class="rank_thumb" src="{{ rankdata[2] }}">
+                                    <div class="rank_label red_label">{{ rankdata[0] }}</div>
+                                </div>
+                                <div class="rank_result">{{ rankdata[3] }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Year 마진 탑5 -->
+                <div class="dashboard_element_header">
+                    마진 TOP 5<span class='unit'>(단위 : 천원)</span>
+                </div>
+                <div class="rank_div">
+                    <div class="row">
+                        {% for rankdata in year_margin %}
+                        <a href="/api_product_report?prdcode={{ rankdata[1] }}">
+                            <div class="ranked_prd">
+                                <div class="rank_thum_div">
+                                    <img class="rank_thumb" src="{{ rankdata[2] }}">
+                                    <div class="rank_label pupple_label">{{ rankdata[0] }}</div>
+                                </div>
+                                <div class="rank_result">{{ rankdata[3] }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Year 마진 워스트 5 -->
+                <div class="dashboard_element_header">
+                    마진 WORST 5<span class='unit'>(역마진 상품, 단위 : 천원)</span>
+                </div>
+                <div class="rank_div">
+                    <div class="row">
+                        {% for rankdata in year_margin_reverse %}
+                        <a href="/api_product_report?prdcode={{ rankdata[1] }}">
+                            <div class="ranked_prd">
+                                <div class="rank_thum_div">
+                                    <img class="rank_thumb" src="{{ rankdata[2] }}">
+                                    <div class="rank_label pupple_label">{{ rankdata[0] }}</div>
+                                </div>
+                                <div class="rank_result">{{ rankdata[3] }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Year ROAS BEST 5 -->
+                <div class="dashboard_element_header">
+                    광고  ROAS TOP 5<span class='unit'>(단위 : %)</span>
+                </div>
+                <div class="rank_div">
+                    <div class="row">
+                        {% for rankdata in year_roas %}
+                        <a href="/api_product_report?prdcode={{ rankdata[1] }}">
+                            <div class="ranked_prd">
+                                <div class="rank_thum_div">
+                                    <img class="rank_thumb" src="{{ rankdata[2] }}">
+                                    <div class="rank_label green_label">{{ rankdata[0] }}</div>
+                                </div>
+                                <div class="rank_result">{{ rankdata[3] }}</div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table -품절정보 -->
+<script>
+    var table_dashboard_soldout = $('#table_dashboard_soldout').DataTable({
+        ajax: {
+            method : "GET",
+            contentType: 'application/json;charset=UTF-8',
+            url: '/api_table_dashboard_soldout',
+            dataSrc: function(res) { var data = res.data; return data; }, },
+        columns: [
+            { data: "prdcode", title : '상품코드', name : 'prdcode' },
+            { data: "thumb", title : '제품',
+                "render": function (data, type, row) {
+                    data = '<img class="card" style="width:35px; margin-left:auto; margin-right:auto;" src="' + row.thumb +'">';
+                    return data;
+                },
+            },
+            { data: "deltype", title : '판매방식', name : 'optname' },
+            { data: "optname", title : '옵션명', name : 'optname', 
+                render : function(data, row, type){
+                    return '<a href="/api_product_report?prdcode=' + type['prdcode'] + '">' + data + '</a>'
+                }
+            },
+            { data: "stock", title : '재고', name : 'stock' },
+            { data: "soldperday", title : '일평균판매(7일)', name : 'soldperday' },
+            { data: "estimatesoldout", title : '품절예상일', name : 'estimatesoldout',
+                render: function(data, type, row) {
+                    let color = 'black';
+                    let optname = row['optname']
+                    if (optname.includes('자동생성')){return ''}
+                    else{
+                        if ( data == 0 ){ color = 'red' }
+                        else if ( data < 8 ){ color = 'orange' }
+                        return `<span style="color:${color}">${data}</span>`
+                    }
+                }
+            },
+            
+        ],
+        columnDefs: [
+            {
+                targets: [0,1,2,3,4,5,6],
+                class : 'text-center'
+            },
+            {
+                target: 0,
+                visible: false,
+                searchable: false
+            },
+        ],
+        order: [[6, 'asc']],
+        dom : 't',
+        ordering:true,
+        searching : false,
+        processing: true,
+        colReorder: true,
+        paging : false,
+        scrollX : true, scrollY:'300px',
+    });
+</script>
+
+<!-- Table -상품별 주요 실적 -->
+<script>
+    var table_dashboard_prdreport = $('#table_dashboard_prdreport').DataTable({
+        ajax: {
+            method : "GET",
+            contentType: 'application/json;charset=UTF-8',
+            url: '/api_table_dashboard_prdreport',
+            dataSrc: function(res) { var data = res.data; return data; }, },
+        columns: [
+            { data: "prdcode", title : '상품코드', name : 'prdcode' },
+            { data: "thumb", title : '제품',
+                "render": function (data, type, row) {
+                    data = '<img class="card" style="width:35px; margin-left:auto; margin-right:auto;" src="' + row.thumb +'">';
+                    return data;
+                },
+            },
+            { data: "prdname", title : '등록상품명', name : 'prdname',
+                render : function(data, row, type){
+                    return '<a href="/api_product_report?prdcode=' + type['prdcode'] + '">' + data + '</a>'
+                }
+            },
+            { data: "orderamount", title : '매출', name : 'orderamount' },
+            { data: "orderq", title : '판매수량', name : 'orderq' },
+            { data: "margin", title : '마진', name : 'margin' },
+            { data: "adscost", title : '광고비', name : 'adscost' },
+            { data: "roas", title : 'ROAS', name : 'roas' },
+           
+        ],
+        columnDefs: [
+            {
+                targets: [3,4,5,6],
+                render : $.fn.DataTable.render.number( ',' )
+            },
+            {
+                targets: [0,1,2,3,4,5,6],
+                class : 'text-center'
+            },
+            {
+                target: 0,
+                visible: false,
+                searchable: false
+            },
+        ],
+        order: [[3, 'desc']],
+        dom : 't',
+        ordering:true,
+        searching : false,
+        processing: true,
+        colReorder: true,
+        paging : false,
+        scrollX : true, scrollY:'300px',
+    });
+</script>
+
+<!-- Month 요약 영역 -->
+<!-- CHART - 일별 매출 -->
+<script>
+    $.ajax({
+        dataType: "text",
+        contentType: "application/json",
+        url: "/api_chart_dashboard_daily_sales",
+        type: "GET",
+        success: function(response){
+            var  chart_dashboard_daily_sales = Chart.getChart('chart_dashboard_daily_sales');
+            if (chart_dashboard_daily_sales !== undefined) { chart_dashboard_daily_sales.destroy(); };
+
+            var _data;
+            var _labels;
+            full_data = JSON.parse(response);
+            _data = full_data['data'];
+            _labels = full_data['data']['labels'];
+            
+            var chart_dashboard_daily_sales = new Chart( document.getElementById('chart_dashboard_daily_sales'), {
+                type: 'bar', 
+                data: {
+                    labels: _labels,
+                    datasets: [
+                        { label: '매출', data: _data['orderamount'], maxBarThickness: 10, backgroundColor : '#c47c8a'},
+                    ],
+                },
+                options: {
+
+                    interaction: { intersect: false, mode: 'index', },
+                    scales: {
+                        x : { grid: { display : false, } },
+                        y : { min:0, position : 'left', display : false, gridLines: { drawBorder: false, },},
+                    },
+                    plugins: { title: { display: false }, legend: { display:false, }, }
+                }
+            });
+            chart_dashboard_daily_sales.resize();
+        },
+    });
+
+</script>
+<!-- CHART - 일별  마진 -->
+<script>
+    $.ajax({
+        dataType: "text",
+        contentType: "application/json",
+        url: "/api_chart_dashboard_daily_margin",
+        type: "GET",
+        success: function(response){
+            var  chart_dashboard_daily_margin = Chart.getChart('chart_dashboard_daily_margin');
+            if (chart_dashboard_daily_margin !== undefined) { chart_dashboard_daily_margin.destroy(); };
+
+            var _data;
+            var _labels;
+            full_data = JSON.parse(response);
+            _data = full_data['data'];
+            _labels = full_data['data']['labels'];
+            
+            var chart_dashboard_daily_margin = new Chart( document.getElementById('chart_dashboard_daily_margin'), {
+                type: 'bar', 
+                data: {
+                    labels: _labels,
+                    datasets: [ {label: '마진', data: _data['margin'], maxBarThickness: 10, backgroundColor : '#937cbd'},
+                    ],
+                },
+                
+                options: {
+                    interaction: { intersect: false, mode: 'index', },
+                    scales: {
+                        x : { grid: { display : false, } },
+                        y : { position : 'left', display : false, gridLines: { drawBorder: false, },},
+                    },
+                    plugins: { title: { display: false }, legend: { display:false, }, }
+                }
+            });
+            chart_dashboard_daily_margin.resize();
+        },
+    });
+
+</script>
+
+<!-- CHART - 일별 ROAS -->
+<script>
+    $.ajax({
+        dataType: "text",
+        contentType: "application/json",
+        url: "/api_chart_dashboard_daily_roas",
+        type: "GET",
+        success: function(response){
+            var  chart_dashboard_daily_roas = Chart.getChart('chart_dashboard_daily_roas');
+            if (chart_dashboard_daily_roas !== undefined) { chart_dashboard_daily_roas.destroy(); };
+
+            var _data;
+            var _labels;
+            full_data = JSON.parse(response);
+            _data = full_data['data'];
+            _labels = full_data['data']['labels'];
+            
+            var chart_dashboard_daily_roas = new Chart( document.getElementById('chart_dashboard_daily_roas'), {
+                type: 'bar', 
+                data: {
+                    labels: _labels,
+                    datasets: [ {label: 'ROAS', data: _data['roas'],  maxBarThickness: 10, backgroundColor : '#559557'},
+                     ],
+                },
+                
+                options: {
+                    interaction: { intersect: false, mode: 'index', },
+                    scales: {
+                        x : { grid: { display : false, } },
+                        y : { min:0, position : 'left', display : false, gridLines: { drawBorder: false, },},
+                    },
+                    plugins: { title: { display: false }, legend: { display:false, }, }
+                }
+            });
+            chart_dashboard_daily_roas.resize();
+        },
+    });
+
+</script>
+
+<!-- Year 요약 영역 -->
+<!-- CHART - 월별 매출 -->
+<script>
+    $.ajax({
+        dataType: "text",
+        contentType: "application/json",
+        url: "/api_chart_dashboard_monthly_sales",
+        type: "GET",
+        success: function(response){
+            var  chart_dashboard_monthly_sales = Chart.getChart('chart_dashboard_monthly_sales');
+            if (chart_dashboard_monthly_sales !== undefined) { chart_dashboard_monthly_sales.destroy(); };
+
+            var _data;
+            var _labels;
+            full_data = JSON.parse(response);
+            _data = full_data['data'];
+            _labels = full_data['data']['labels'];
+            
+            var chart_dashboard_monthly_sales = new Chart( document.getElementById('chart_dashboard_monthly_sales'), {
+                type: 'bar', 
+                data: {
+                    labels: _labels,
+                    datasets: [
+                        { label: '매출', data: _data['orderamount'], maxBarThickness: 10, backgroundColor : '#c47c8a'},
+                    ],
+                },
+                options: {
+
+                    interaction: { intersect: false, mode: 'index', },
+                    scales: {
+                        x : { grid: { display : false, } },
+                        y : { min:0, position : 'left', display : false, gridLines: { drawBorder: false, },},
+                    },
+                    plugins: { title: { display: false }, legend: { display:false, }, }
+                }
+            });
+            chart_dashboard_monthly_sales.resize();
+        },
+    });
+
+</script>
+<!-- CHART - 월별  마진 -->
+<script>
+    $.ajax({
+        dataType: "text",
+        contentType: "application/json",
+        url: "/api_chart_dashboard_monthly_margin",
+        type: "GET",
+        success: function(response){
+            var  chart_dashboard_monthly_margin = Chart.getChart('chart_dashboard_monthly_margin');
+            if (chart_dashboard_monthly_margin !== undefined) { chart_dashboard_monthly_margin.destroy(); };
+
+            var _data;
+            var _labels;
+            full_data = JSON.parse(response);
+            _data = full_data['data'];
+            _labels = full_data['data']['labels'];
+            
+            var chart_dashboard_monthly_margin = new Chart( document.getElementById('chart_dashboard_monthly_margin'), {
+                type: 'bar', 
+                data: {
+                    labels: _labels,
+                    datasets: [ {label: '마진', data: _data['margin'], maxBarThickness: 10, backgroundColor : '#937cbd'},
+                    ],
+                },
+                
+                options: {
+                    interaction: { intersect: false, mode: 'index', },
+                    scales: {
+                        x : { grid: { display : false, } },
+                        y : { min:0, position : 'left', display : false, gridLines: { drawBorder: false, },},
+                    },
+                    plugins: { title: { display: false }, legend: { display:false, }, }
+                }
+            });
+            chart_dashboard_monthly_margin.resize();
+        },
+    });
+
+</script>
+
+<!-- CHART - 월별 ROAS -->
+<script>
+    $.ajax({
+        dataType: "text",
+        contentType: "application/json",
+        url: "/api_chart_dashboard_monthly_roas",
+        type: "GET",
+        success: function(response){
+            var  chart_dashboard_monthly_roas = Chart.getChart('chart_dashboard_monthly_roas');
+            if (chart_dashboard_monthly_roas !== undefined) { chart_dashboard_monthly_roas.destroy(); };
+
+            var _data;
+            var _labels;
+            full_data = JSON.parse(response);
+            _data = full_data['data'];
+            _labels = full_data['data']['labels'];
+            
+            var chart_dashboard_monthly_roas = new Chart( document.getElementById('chart_dashboard_monthly_roas'), {
+                type: 'bar', 
+                data: {
+                    labels: _labels,
+                    datasets: [ {label: 'ROAS', data: _data['roas'],  maxBarThickness: 10, backgroundColor : '#559557'},
+                     ],
+                },
+                
+                options: {
+                    interaction: { intersect: false, mode: 'index', },
+                    scales: {
+                        x : { grid: { display : false, } },
+                        y : { min:0, position : 'left', display : false, gridLines: { drawBorder: false, },},
+                    },
+                    plugins: { title: { display: false }, legend: { display:false, }, }
+                }
+            });
+            chart_dashboard_monthly_roas.resize();
+        },
+    });
+
+</script>
+
+{% endblock %}

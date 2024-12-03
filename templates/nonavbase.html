@@ -1,0 +1,17 @@
+{% import "_macros.html" as macros %}
+
+<!doctype html>
+<html lang="en">
+  {{ macros.head() }}
+  <body>
+      <div class="container my-5" id="tete">
+        {% block content %}
+
+        {% endblock %}
+      </div>
+      <div class="no_menu_body">
+        <div class="kakao_talk_btn" id="kakao-talk-channel-chat-button" data-channel-public-id="_FAxexhn" data-title="question" data-size="small" data-color="yellow" data-shape="pc"  data-support-multiple-densities="true"></div>
+      </div>    {{ macros.notice_modal() }}
+    {{ macros.footerScripts() }}
+  </body>
+</html>

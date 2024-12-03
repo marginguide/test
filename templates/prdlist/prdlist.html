@@ -1,0 +1,355 @@
+<!-- 상품리스트 -->
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="report_page">
+  <fieldset class="groupbox-border">
+    <legend class="groupbox-border">마진계산 기초값 설정</legend>
+    <div class="row">
+      <div class="report_about col-7">
+        <ul>
+            <li>각 상품별로 기본비용을 입력할 경우 직접 입력한 수치가 우선활용됩니다. </li>
+            <li>비용정보가 미입력된 상품에 대해서 아래 기초값들이 활용됩니다.</li>
+            <li>별도로 저장하지 않아도 자동저장 됩니다.</li>
+        </ul>
+      </div>
+      <div class="col-3">
+        <!-- 상품 비용정보 입력방법 안내 -->
+        <button class="btn btn-sm btn-pill btn-primary mr-3 floatright" type="button" data-toggle="modal" data-target="#modal-costupdate"><span class="mr-1"><span class="fa fa-info ml-1 mr-1"></span></span> 상품 비용별 상세 설명</button>
+        <!-- 상품 비용정보 입력방법 안내 모달창 -->
+        <div class="modal fade" id="modal-costupdate" tabindex="-1" role="dialog" aria-labelledby="modal-costupdate" style="display: none;" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content shadow-soft">
+              <div class="modal-header">
+                <h2 class="h4 modal-title my-2"><strong>제품 관련 비용 설명</strong></h2>
+              </div>
+              <div class="modal-body px-1">
+                <div class="row ml-4 mr-4 mt-2 mb-5">
+                  <div class="col-md-14 col-lg-14">
+                    <div class="nav-wrapper position-relative mb-2">
+                      <ul class="nav nav-pills nav-fill flex-column flex-md-row" id="tabs-icons-text" role="tablist">
+                        <li class="nav-item"><a class="nav-link mb-sm-3 mb-md-0 active" id="tabs-icons-text-1-tab" data-toggle="tab" href="#tabs-icons-text-1" role="tab" aria-controls="tabs-icons-text-1" aria-selected="false"><i class="fas fa-tint"></i>제품원가</a></li>
+                        <li class="nav-item"><a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-2-tab" data-toggle="tab" href="#tabs-icons-text-2" role="tab" aria-controls="tabs-icons-text-2" aria-selected="false"><i class="fas fa-shipping-fast"></i>실배송비</a></li>
+                        <li class="nav-item"><a class="nav-link mb-sm-3 mb-md-0" id="tabs-icons-text-3-tab" data-toggle="tab" href="#tabs-icons-text-3" role="tab" aria-controls="tabs-icons-text-3" aria-selected="false"><i class="fas fa-store"></i>제트입출고비</a></li>
+                        <li class="nav-item"><a class="nav-link mb-sm-3 mb-md-0 " id="tabs-icons-text-4-tab" data-toggle="tab" href="#tabs-icons-text-4" role="tab" aria-controls="tabs-icons-text-4" aria-selected="true"><i class="fas fa-user-astronaut"></i>제트배송비</a></li>
+                      </ul>
+                    </div>
+                    <div class="card shadow-inset bg-primary border-light p-4 rounded">
+                      <div class="card-body p-0">
+                        <div class="tab-content" id="tabcontent2">
+                          <div class="tab-pane fade  active show" id="tabs-icons-text-1" role="tabpanel" aria-labelledby="tabs-icons-text-1-tab">
+                            <p>
+                              제품의 원가를 의미합니다. 만약 중국에서 제품을 수입하고, 한국에서 개별 패키징을 변경하여 판매할 경우 제품원가에는 패키징 비용이 포합됩니다.
+                            </p>
+                          </div>
+                          <div class="tab-pane fade" id="tabs-icons-text-2" role="tabpanel" aria-labelledby="tabs-icons-text-2-tab">
+                            <p>
+                              주문 건당 실제로 소요되는 모든 배송비용입니다. 일반적으로 주문 시 택배비와 박스비, 충격보강제 등의 비용이 포함됩니다. 여기에서 박스비는 제품별 패키징 비용이 아닌 배송용 박스를 의미합니다. <br>
+                              실배송비는 판매자 배송 상품에서 주문 건당으로 적용됩니다.
+                            </p>
+                            <ul>
+                                <li>상품에 적용된 배송비가 아닌, 실제로 제품 발송에 필요한 비용</li>
+                                <li>위탁 상품의 경우 위탁상품 배송비 기준으로 적용(위탁상품이 무료배송시 실배송비는 0 으로 입력)</li>
+                            </ul>
+                          </div>
+                          <div class="tab-pane fade" id="tabs-icons-text-3" role="tabpanel" aria-labelledby="tabs-icons-text-2-tab">
+                            <p>
+                              제트배송 상품이 판매될 경우 발생하는 입출고비입니다. 비용은 정산 시 상계됩니다. <br>
+                              윙페이지의 정산 &gt;&gt; 로켓그로스 정산현황 &gt;&gt; 상세리포트 &gt;&gt; 입출고/배송요금 리포트에서 확인할 수 있습니다. </p>
+                          </div>
+                          <div class="tab-pane fade" id="tabs-icons-text-4" role="tabpanel" aria-labelledby="tabs-icons-text-4-tab">
+                            <p>
+                              제트배송 상품이 판매될 경우 발생하는 제트배송비입니다. 비용은 정산 시 상계됩니다.<br>
+                              윙페이지의 정산 &gt;&gt; 로켓그로스 정산현황 &gt;&gt; 상세리포트 &gt;&gt; 입출고/배송요금 리포트에서 확인할 수 있습니다. </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <form hx-post="/apt_save_defualt_value" hx-trigger="change" hx-swap="innerHTML" hx-target="#complete">
+      <div id="complete"></div>
+      <div class='row'>
+        <div class='col-3'>
+          <div class="itemtitle">상품 원가(판매가 대비 비율로 입력)</div>
+          <div class="itemvalue">
+            <input type='number' value="{{ default_val['prdcost'] }}" name="prdcost" class="input_default">
+            <span class="unit">%</span>
+          </div>
+        </div>
+        <div class='col-3'>
+          <div class="itemtitle">실배송비(택배비 + 택배포장비)</div>
+          <div class="itemvalue">
+            <input type='number' value="{{ default_val['realshipcost'] }}" name="realshipcost" class="input_default">
+            <span class="unit">원<span>
+          </div>
+        </div>
+        <div class='col-3'>
+          <div class="itemtitle">제트입출고비</div>
+          <div class="itemvalue">
+            <input type='number' value="{{ default_val['jetinoutcost'] }}" name="jetinoutcost" class="input_default">
+            <span class="unit">원<span>
+          </div>
+        </div>
+        <div class='col-3'>
+          <div class="itemtitle">제트배송비</div>
+          <div class="itemvalue">
+            <input type='number' value="{{ default_val['jetshipcost'] }}" name="jetshipcost" class="input_default">
+            <span class="unit">원<span>
+          </div>
+        </div>
+      </div>
+    </form>
+  </fieldset>
+
+  <div class="reportsection">
+    <div class="row">
+      <div class="col-3">
+        <select  id ="select_account" name = "select_account" class="custom-select my-1 mr-sm-2" onchange="fn_search();">
+          <option  value="all">모든 계정</option>
+          {% for account in accounts %}
+              <option  value="{{ account['sid'] }}" for="{{ account['sid'] }}">{{ account['sid'] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-9">
+
+        <!-- 상품엑셀 적용하기  -->
+        <button class="btn btn-sm btn-pill btn-primary mr-3 floatright"  type="button" hx-get="/updateexcel" hx-swap="innerHTML" hx-target="body">
+          <span class="mr-1"><span class="fas fa-database ml-1 mr-1" ></span></span> 
+            엑셀파일 수정본 DB반영
+        </button>
+        <!-- 상품엑셀 파일 열기 -->
+        <button class="btn btn-sm btn-pill btn-primary mr-3 floatright"  type="button" hx-get="/openexcel" hx-swap="innerHTML" hx-target=".complete_modify">
+          <span class="mr-1"><span class="fas fa-file-excel ml-1 mr-1 " ></span></span> 
+            상품 기초비용 수정용 엑셀 열기
+        </button>
+        <!-- 제트 비용 수집  -->
+        <button class="btn btn-sm btn-pill btn-primary mr-3 floatright"  type="button" hx-get="/api_jetcost_loading_prdlist" hx-swap="innerHTML" hx-target="body">
+          <span class="mr-1"><span class="fas fa-database ml-1 mr-1" ></span></span> 
+            제트 비용 수집(최근 1개월 정산실적에서)
+        </button>
+        
+        <div class="complete_modify floatright"></div>
+      </div>
+    </div>
+    <div class="container">
+        <table id="table_prdlist" class="display nowrap gridjs-wrapper" width="100%"></table>
+    </div>
+  </div>
+</div>
+<script>
+	// 상품리스트
+	var table_prdlist = $('#table_prdlist').DataTable({
+        serverSide : true,
+        processing : true,
+        searching : true,
+		ajax: {
+			type : "POST",
+			contentType: 'application/json;charset=UTF-8',
+			url: '/api_ajax_prdlist',
+      data: function (d) {
+                d.account = $("#select_account").val()
+                return JSON.stringify(d);
+            },
+			dataSrc: function(res) {
+				var data = res.data;
+				return data;
+				},
+			},
+    
+		columns: [
+			{
+        title: "",
+				className: 'details-control',
+				orderable: false,
+				data: null,
+				defaultContent: ''
+			},
+			{
+        title: "썸네일",
+				data: "thumb",
+				"render": function (data, type, row) {
+					data = '<img class="card" style="width:35px; margin-left:auto; margin-right:auto;" src="' + row.thumb +'">';
+					return data;
+				}
+			},
+			{ title: "계정", name : 'account', data: "account" },
+			{ title: "등록상품ID", name : 'prdcode', data: "prdcode" },
+			{ title: "등록상품명", name : 'prdname', data: "prdname" },
+			{ title: "수수료율", name : 'sellfee', data: "sellfee" },
+      { title: '누적 판매수량', name : 'soldtotal', data: "soldtotal" },
+      { title: '누적 매출(천원)', name : 'amounttotal', data: "amounttotal" },
+      { title: '누적 마진(천원)', name : 'margintotal', data: "margintotal" },
+      { title: "판매상태", name : 'onsale', data: "onsale",
+        "render": function (data) {
+          if (data == 1 ) { return '판매중'; }
+          else { return '판매중지'; }
+          }
+      },
+      { title: "제품등록일", name : 'createat', data: "createat" },
+		],
+    columnDefs: [
+      {
+          targets: [ 6,7,8 ],
+          render : $.fn.DataTable.render.number( ',' )
+      },
+      { 
+        targets: [0,1,2,3,4,5,6,7,8,9,10],
+        className: "outer_table_td"
+      },
+    ],
+		scrollX : true, scrollY:'600px',
+    fixedColumns: {start: 2 },
+    order: [ [10, 'DESC']],
+    lengthMenu: [50,100, 200, 300]
+
+	});
+
+  // 테이블 리로드(ajax 서칭 이후)
+  function fn_search(){
+    $("#table_prdlist").DataTable().ajax.reload();
+   }
+
+	// 옵션 리스트 생성기
+	function format(rowData) {
+		var childTable = '<table id="cl' + rowData.prdcode + '" class="display compact nowrap w-100 customtable" width="100%">옵션 리스트(비용 수정 자동 반영)</table>';
+		return $(childTable).toArray();
+	}
+
+
+	// 옵션 리스트 테이블
+	$('#table_prdlist tbody').on('click', 'td.details-control', function () {
+		var tr = $(this).closest('tr');
+		var row = table_prdlist.row(tr);
+		var rowData = row.data();
+
+		if (row.child.isShown()) {
+			// This row is already open - close it
+			row.child.hide();
+			tr.removeClass('shown');
+
+			// Destroy the Child Datatable
+			$('#cl' + rowData.prdcode).DataTable().destroy();
+		}
+		else {
+			// Open this row
+			row.child(format(rowData)).show();
+			var id = rowData.prdcode;
+			var childTable = $('#cl' + id).DataTable({
+          ajax: {
+            type : "POST",
+            contentType: 'application/json;charset=UTF-8',
+            url: '/api_ajax_optlist',
+            data: function ( d ) {
+              return JSON.stringify({ 'prdcode': id });
+              },
+            dataSrc: function(res) {
+              var data = res.data;
+              return data;
+              },
+            },
+
+					columns: [
+            { title: '옵션 ID', name : 'optcode', data: "optcode" },
+            { title: '옵션명', name : 'optname',  data: "optname" },
+            { title: '배송방식', name : 'deltype', data: "deltype" },
+            { title: '가격', name : 'price', data: "price" },
+            { title: '제품원가', name : 'prdcost', data: "prdcost",
+              "render": function (data, type, row, meta) {
+                    rendhtml = '<input type="number" id="prdcost_'+ row['optcode']
+                    rendhtml = rendhtml + '" class="edit_cost" value="'+ row['prdcost']
+                    rendhtml = rendhtml + '" onchange="setHandler(this.id)"/>'
+                    return rendhtml;
+                    }
+                  },
+            { title: '실배송비', name : 'realshipcost', data: "realshipcost",
+              "render": function (data, type, row, meta) {
+                    if (row['deltype'] == 'direct'){
+                    rendhtml = '<input type="number" id="realshipcost_'+ row['optcode']
+                    rendhtml = rendhtml + '" class="edit_cost" value="'+ row['realshipcost']
+                    rendhtml = rendhtml + '" onchange="setHandler(this.id)"/>'
+                    return rendhtml;
+                    } else{ return '' }
+                    ;}
+                  },
+            { title: '제트입출고비', name : 'jetinoutcost', data: "jetinoutcost",
+              "render": function (data, type, row, meta) {
+                    if (row['deltype'] == 'jet'){
+                    rendhtml = '<input type="number" id="jetinoutcost_'+ row['optcode']
+                    rendhtml = rendhtml + '" class="edit_cost" value="'+ row['jetinoutcost']
+                    rendhtml = rendhtml + '" onchange="setHandler(this.id)"/>'
+                    return rendhtml;
+                    } else{ return '' }
+                    ;}
+                  },
+            { title: '제트배송비', name : 'jetshipcost', data: "jetshipcost" ,
+              "render": function (data, type, row, meta) {
+                    if (row['deltype'] == 'jet'){
+                    rendhtml = '<input type="number" id="jetshipcost_'+ row['optcode']
+                    rendhtml = rendhtml + '" class="edit_cost" value="'+ row['jetshipcost']
+                    rendhtml = rendhtml + '" onchange="setHandler(this.id)"/>'
+                    return rendhtml;
+                    } else{ return '' }
+                    ;}
+                  },
+            { title: '누적 판매수량', name : 'soldtotal', data: "soldtotal" },
+            { title: '누적 매출', name : 'amounttotal', data: "amounttotal" },
+            { title: '누적 마진', name : 'margintotal', data: "margintotal" },
+            { title: '판매상태', name : 'onsale', data: "onsale",
+              "render": function (data) {
+                if (data == 1 ) { return '판매중'; }
+                else { return '판매중지'; }
+                }
+            },
+				  ],
+          columnDefs: [
+            {
+                targets: [ 3,4,5,6,7,8,9,10 ],
+                render : $.fn.DataTable.render.number( ',' )
+            },
+            { 
+              targets: [0,1,2,3,4,5,6,7,8,9,10,11],
+              className: "inner_table_td"
+            },
+          ],
+          fixedColumns: {start: 2 },
+          paging:false,
+          dom: "t",
+			});
+			tr.addClass('shown');
+		}
+	});
+
+
+
+
+
+
+  // 옵션 비용 정보 개별 수정
+  function setHandler(id){
+        const element = document.getElementById(id);
+        var costval = element.value;
+        var fixid = id;
+        $.ajax({
+          url: '/api_costinfo',
+          method: 'POST',
+          data: {'fixid' : fixid , 
+          'costval' : costval },
+          dataType : 'application/json',
+          success: function () {
+            console.log(id);
+          }
+        }
+      )
+    };
+</script>
+{% endblock %}

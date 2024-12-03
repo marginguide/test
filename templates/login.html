@@ -1,0 +1,49 @@
+{% extends 'nonavbase.html' %}
+{% block content %}
+<div class="row justify-content-md-around">
+  <div class="col-12 col-md-6 col-lg-5 mb-5 mb-lg-0">
+      <div class="card bg-primary shadow-soft border-light p-4">
+          <div class="card-header text-center pb-0">
+              <h2 class="h4">Margin Guide</h2>
+              <span>아이디와 비밀번호를 입력하세요.</span>   
+          </div>
+          <div class="card-body">
+              <form hx-post="/login" hx-swap="innerHTML" hx-target="body">
+                  <!-- Form -->
+                  <div class="form-group">
+                      <label>E-mail</label>
+                      <div class="input-group mb-4">
+                          <div class="input-group-prepend">
+                              <span class="input-group-text"><span class="fas fa-envelope"></span></span>
+                          </div>
+                          <input class="form-control" placeholder="example@company.com"  name="email" type="email" required>
+                      </div>
+                  </div>
+                  <div class="form-group">
+                      <!-- Form -->
+                      <div class="form-group">
+                          <label>비밀번호</label>
+                          <div class="input-group mb-4">
+                              <div class="input-group-prepend">
+                                  <span class="input-group-text"><span class="fas fa-unlock-alt"></span></span>
+                              </div>
+                              <input class="form-control" placeholder="비밀번호(대소문자 구분 필수)" type="password"  name="password" required>
+                          </div>
+                      </div>
+                      <div class="d-block d-sm-flex justify-content-between align-items-center mb-4">
+                          <div><a href="/forgot_password" class="small text-right">비밀번호 찾기(이메일로 발송)</a></div>
+                      </div>
+                  </div>
+                  <button type="submit" class="btn btn-block btn-primary">Log in</button>
+              </form>
+              <div class="d-block d-sm-flex justify-content-center align-items-center mt-4">
+                  <span class="font-weight-normal">
+                      아직 회원이 아니신가요?
+                      <a href="https://www.marginguide.com" class="font-weight-bold" target="_blank">계정 생성하기</a>
+                  </span>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+{% endblock %}

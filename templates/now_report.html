@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="report_page">
+    <!-- 보고서 타이틀 및 기간 선택 -->
+        <div class="page_title">실시간 실적</div>
+        <!-- 페이지 설명 섹션-->
+        <div class="row">
+            <div class="col-8">
+                <div class="page-about" style="margin-top: 20px;">
+                    
+                    <div>※ 수집하기 버튼을 클릭하면 현재 판매현황을 확인할 수 있습니다.</div>
+                    <div>※ 수집시간은 계정당 1분 정도 소요됩니다.</div>
+                </div>
+            </div>
+            <div class="col-4">
+                <button class="macro_on" hx-get="/today_loading" hx-swap="innerHTML" hx-target="body">수집하기</button>
+            </div>
+        </div>
+        <div class="section_title"> 매출, 순익, 광고비  <div class="right_text">{{ summary['now'] }} 기준 </div> </div>
+        <div class="section_content">
+            <div class="row">
+                <div class="col-4">
+                    <div class="itemtitle">매출액
+                    </div>
+                    <div class="itemcontent_large">{{ summary['orderamount'] }}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="itemtitle">광고비
+                    </div>
+                    <div class="itemcontent_large">{{ summary['adscost'] }}
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="itemtitle">마진금액
+                    </div>
+                    <div class="itemcontent_large">{{ summary['margin'] }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section_title"> 판매된 상품 리스트(광고비 제외 마진) <div class="right_text">{{ summary['now'] }} 기준 </div> </div>
+        <div class="section_content">
+            <table id="table_today_soldprd" class="stripe nowrap" style="width:100%;" ></table>
+        </div>
+        <div class="section_title">캠페인별 광고비<div class="right_text">{{ summary['now'] }} 기준 </div> </div>
+        <div class="section_content">
+            <table id="table_today_campaign" class="stripe nowrap" style="width:100%;" ></table>
+        </div>
+</div>
+
+<!-- Table - 옵션정보 -->
+    <script>
+        var table_today_soldprd = $('#table_today_soldprd').DataTable({
+            ajax: {
+                method : "GET",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_today_soldprd',
+                dataSrc: function(res) { var data = res.data; return data; }, },
+            columns: [
+                { data: "account", title : '계정', name : 'account' },
+                { data: "prdcode", title : '상품코드', name : 'prdcode',
+                    render : function(data, row, type){
+                        return '<a href="/api_product_report?prdcode=' + type['prdcode'] +'">'+ type['prdcode'] + '</a>'
+                    }
+                },
+                { data: "prdname", title : '상품명', name : 'prdname',
+                    render : function(data, row, type){
+                        return '<a href="/api_product_report?prdcode=' + type['prdcode'] +'">'+ type['prdname'] + '</a>'
+                    }
+                },
+                { data: "deltype", title : '배송방식', name : 'deltype' },
+                { data: "optname", title : '옵션명', name : 'optname' },
+                { data: "optcode", title : '옵션코드', name : 'optcode' },
+                { data: "orderq", title : '판매수량', name : 'orderq' },
+                { data: "orderamount", title : '판매금액', name : 'orderamount' },
+                { data: "margin", title : '마진금액', name : 'margin' }
+            ],
+            columnDefs: [
+                { targets: [6,7,8], className: "fee-col", render : $.fn.DataTable.render.number( ',' ) },
+                { targets: [0,1,2,3,4,5], className : 'text-center' },
+            ],
+            order: [[6, 'desc']],
+            dom : 't',
+            ordering:true,
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            scrollX : true
+        });
+    </script>
+    
+<!-- Table - 옵션정보 -->
+    <script>
+        var table_today_campaign = $('#table_today_campaign').DataTable({
+            ajax: {
+                method : "GET",
+                contentType: 'application/json;charset=UTF-8',
+                url: '/api_table_today_campaign',
+                dataSrc: function(res) { var data = res.data; return data; }, },
+            columns: [
+                { data: "account", title : '계정', name : 'account' },
+                { data: "campaignname", title : '캠페인명', name : 'campaignname',
+                    render : function(row, data, type){
+                        return '<a href="/campaign_page?campaigncode=' + type['campaigncode'] + '">' + type['campaignname'] + '</a>'
+                    }
+                },
+                { data: "campaigncode", title : '캠페인코드', name : 'campaigncode',
+                    render : function(row, data, type){
+                        return '<a href="/campaign_page?campaigncode=' + type['campaigncode'] + '">' + type['campaigncode'] + '</a>'
+                    }
+                },
+                { data: "budget", title : '예산', name : 'budget' },
+                { data: "spentbudget", title : '현재 사용금액', name : 'optcodespentbudget' },
+                { data: "spentrate", title : '소진율', name : 'spentrate' },
+            ],
+            columnDefs: [
+                { targets: [3,4], className: "fee-col", render : $.fn.DataTable.render.number( ',' ) },
+                { targets: [0,1,2], className : 'text-center' },
+            ],
+            order: [[4, 'desc']],
+            dom : 't',
+            ordering:true,
+            searching : false,
+            processing: true,
+            colReorder: true,
+            paging : false,
+            scrollX : true
+        });
+    </script>
+{% endblock %}

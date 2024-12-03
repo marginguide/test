@@ -1,0 +1,9 @@
+
+
+<div class='alert_auth'>
+    {{ phone }} 번호로 인증번호가 발송되었습니다. 인증번호를 입력해주세요
+    <form hx-post='/api_input_authcode' hx-swap='innerHTML' hx-target='#authsms_input' hx-triggr='click' >
+        <input type='number' name = 'code' class='input_authcode'>
+        <input type='submit' class='btn_authcode'>
+    </form>
+</div>  

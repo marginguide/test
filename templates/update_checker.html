@@ -1,0 +1,89 @@
+{% extends 'nonavbase.html' %}
+{% block content %}
+{% if need_update == 'False' %}
+
+<div style="height:30vh;text-align:center;" hx-get="/update_checker?status=check" hx-swap="innerHTML" hx-trigger="load" hx-target="body"></div>
+<div style="text-align:center;height:90px">업데이트 체크중..</div>
+<div class="loader"></div>
+
+{% elif need_update == 'True' %}
+
+<div style="height:30vh;text-align:center;"></div>
+<div style="text-align:center;height:90px">새로운 업데이트가 발견되었습니다. <br>
+  현재버전 : {{ currentVersion }}<br>
+  업데이트 버전 : {{ result }}<br>확인을 누르시면 업데이트를 진행합니다.<br>
+  <button class="update-btn" hx-get="/update_checker?status=download" hx-swap="innerHTML" hx-target="body">확인</button>
+  <br><br>만약, 업데이트 문제 발생시 아래 설치파일을 수동으로 받고 재설치해주세요.<br>
+  기존 마진가이드는 지우지 마시고, 그대로 설치하시면 기존 데이터가 계속 보전됩니다.<br>
+  <a href="https://github.com/marginguide/marginguide/raw/refs/heads/main/MarginGuide_Setup.zip" target="_blank">수동 업그레이 파일 다운로드 받기</a>
+</div>
+
+{% elif need_update == 'download' %}
+
+<div style="height:30vh;text-align:center;" hx-get="/download_update_flie" hx-swap="innerHTML" hx-trigger="load" hx-target="body"></div>
+  <div style="text-align:center;height:90px">
+    업데이트 파일을 다운로드 중입니다.<br>다운로드가 완료되면 윈도우 설치창이 시작됩니다.(기존 데이터는 보전됩니다)<br><br>
+    <div class="loader"></div> <br><br>
+    <br><br>만약, 업데이트 문제 발생시 아래 설치파일을 수동으로 받고 재설치해주세요.<br>
+    기존 마진가이드는 지우지 마시고, 그대로 설치하시면 기존 데이터가 계속 보전됩니다.<br>
+    <a href="https://github.com/marginguide/marginguide/raw/refs/heads/main/MarginGuide_Setup.zip" target="_blank">수동 업그레이 파일 다운로드 받기</a>
+  </div>
+</div>
+
+{% elif need_update == 'download_fail' %}
+
+<div style="height:30vh;text-align:center;"></div>
+<div style="text-align:center;height:90px">업데이트 파일 다운로드에 실패했습니다.<br>
+  현재버전 : {{ currentVersion }}<br>
+  업데이트 버전 : {{ result }}<br>다시 시도해 주세요. 지속적으로 실패시 관리자에게 문의주세요.<br>
+  <button class="update-btn" hx-get="/update_checker?status=download" hx-swap="innerHTML" hx-target="body">확인</button>
+  <br><br>만약, 업데이트 문제 발생시 아래 설치파일을 수동으로 받고 재설치해주세요.<br>
+  기존 마진가이드는 지우지 마시고, 그대로 설치하시면 기존 데이터가 계속 보전됩니다.<br>
+  <a href="https://github.com/marginguide/marginguide/raw/refs/heads/main/MarginGuide_Setup.zip" target="_blank">수동 업그레이 파일 다운로드 받기</a>
+</div>
+
+{% endif %}
+
+<style>
+    /* HTML: <div class="loader"></div> */
+  .loader {
+    width: 40px;
+    aspect-ratio: 1;
+    --c:no-repeat linear-gradient(#000 0 0);
+    background: 
+      var(--c) 0    0,
+      var(--c) 0    100%, 
+      var(--c) 50%  0,  
+      var(--c) 50%  100%, 
+      var(--c) 100% 0, 
+      var(--c) 100% 100%;
+    background-size: 8px 50%;
+    animation: l8-0 2s infinite;
+    position: relative;
+    overflow: hidden;
+  }
+  .loader:before {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #000;
+    top: calc(50% - 4px);
+    left: -8px;
+    animation: inherit;
+    animation-name: l8-1;
+  }
+  @keyframes l8-0 {
+  16.67% {background-size:8px 30%, 8px 30%, 8px 50%, 8px 50%, 8px 50%, 8px 50%}
+  33.33% {background-size:8px 30%, 8px 30%, 8px 30%, 8px 30%, 8px 50%, 8px 50%}
+  50%    {background-size:8px 30%, 8px 30%, 8px 30%, 8px 30%, 8px 50%, 8px 50%}
+  66.67% {background-size:8px 50%, 8px 50%, 8px 30%, 8px 30%, 8px 50%, 8px 50%}
+  83.33% {background-size:8px 50%, 8px 50%, 8px 50%, 8px 50%, 8px 50%, 8px 50%}
+  }
+  @keyframes l8-1 {
+  20%      {left:0px}
+  40%,100% {left:calc(50% - 4px)}
+  }
+</style>
+{% endblock %}
